@@ -1,6 +1,6 @@
 # 한발짝 (hanbaljjak)
 
-AI 기반 작업 분해 도구. 시스템·배포 아키텍처 기준 모노레포 스캐폴드.
+AI 기반 작업 분해 도구.
 
 ## 아키텍처 한눈에
 
@@ -76,7 +76,7 @@ npm run dev   # http://localhost:5173
 - **PR**: 작게, 자주. 화면 변경이면 스크린샷 포함. 템플릿(`.github/pull_request_template.md`) 따라 작성.
 - **충돌 줄이기**: `VIBE_CODING_PLAN.md`의 Phase 단위로 누가 뭘 할지 미리 분담.
 
-## 다음 단계 (이번 스캐폴드 범위 밖)
+## 다음 단계
 
 - Supabase 클라이언트 + 스키마 연결
 - Anthropic SDK 라우트 (`/api/decompose` 등)
