@@ -50,6 +50,32 @@ cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 ```
 
+## 팀원 온보딩
+
+```bash
+# 1. 클론
+git clone https://github.com/<owner>/hanbaljjak.git
+cd hanbaljjak
+
+# 2. 의존성
+npm install
+
+# 3. 환경변수 (값은 팀 공유 채널에서 받기 — git에 절대 X)
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
+
+# 4. 실행
+npm run dev   # http://localhost:5173
+```
+
+## 협업 규약
+
+- **브랜치**: `feat/<기능>`, `fix/<버그>`, `chore/<잡일>` 접두로 만든다. 예: `feat/home-input`.
+- **main에 직접 push 금지** — 반드시 PR을 거친다 (1명 이상 approve).
+- **커밋 메시지**: `<type>: <한 줄 설명>` (Conventional Commits). type은 `feat / fix / chore / docs / refactor / style`.
+- **PR**: 작게, 자주. 화면 변경이면 스크린샷 포함. 템플릿(`.github/pull_request_template.md`) 따라 작성.
+- **충돌 줄이기**: `VIBE_CODING_PLAN.md`의 Phase 단위로 누가 뭘 할지 미리 분담.
+
 ## 다음 단계 (이번 스캐폴드 범위 밖)
 
 - Supabase 클라이언트 + 스키마 연결
