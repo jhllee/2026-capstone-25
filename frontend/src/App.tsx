@@ -1,15 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppShell from "./components/AppShell";
+import HomePage from "./pages/HomePage";
+import AllPage from "./pages/AllPage";
 
 // 각 탭의 placeholder
-function HomePage() {
-  return <h1 className="p-6 text-2xl font-bold">홈</h1>;
-}
 function CalendarPage() {
   return <h1 className="p-6 text-2xl font-bold">일정</h1>;
-}
-function AllPage() {
-  return <h1 className="p-6 text-2xl font-bold">전체</h1>;
 }
 function ReportPage() {
   return <h1 className="p-6 text-2xl font-bold">리포트</h1>;

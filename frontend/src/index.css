@@ -35,8 +35,8 @@
   /* 글자 / 회색조 */
   --color-tx: #3D2F27;          /* 본문 텍스트 */
   --color-tx2: #6B5A4E;         /* 보조 텍스트 */
-  --color-mu: #B5A495;          /* 비활성 라벨 */
-  --color-mu2: #D9CCBE;         /* 플레이스홀더 */
+  --color-mu: #A59485;          /* 비활성 라벨 */
+  --color-mu2: #C9BCAE;         /* 플레이스홀더 */
 
   /* 보더 / 약한 강조 배경 */
   --color-fa: #FFF3EA;          /* hover 배경 */
