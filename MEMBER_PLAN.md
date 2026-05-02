@@ -205,12 +205,12 @@
 | **PR 브랜치** | `feat/all-tab` |
 
 **산출물**:
-- [ ] `backend/src/schemas/project.ts` (zod)
-- [ ] `backend/src/routes/projects.ts` (GET 목록 · POST 생성 · DELETE 삭제)
-- [ ] `pages/AllPage.tsx` (목록 모드)
-- [ ] `components/all/ProjectCard.tsx` (일반 카드 — 색상 점·진행률 바·다음 단계 박스·삭제 버튼)
-- [ ] `components/all/SingleCard.tsx` (단일 카드 — 체크박스만)
-- [ ] D-Day 그룹핑 + 빈 상태 (§10.2.5)
+- [x] `backend/src/schemas/project.ts` (zod)
+- [x] `backend/src/routes/projects.ts` (GET 목록 · POST 생성 · DELETE 삭제)
+- [x] `pages/AllPage.tsx` (목록 모드)
+- [x] `components/all/ProjectCard.tsx` (일반 카드 — 색상 점·진행률 바·다음 단계 박스·삭제 버튼)
+- [x] `components/all/SingleCard.tsx` (단일 카드 — 체크박스만)
+- [x] D-Day 그룹핑 + 빈 상태 (§10.2.5)
 
 ### J4. 프로젝트 상세 화면 — **지희**
 

@@ -28,5 +28,11 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 
   req.userId = data.user.id;
   req.userEmail = data.user.email ?? undefined;
+
+  await supabase.from("users").upsert({
+    id: data.user.id,
+    email: data.user.email ?? "",
+  });
+
   next();
 }
