@@ -174,9 +174,9 @@
 | **PR 브랜치** | `feat/db-schema` |
 
 **산출물**:
-- [ ] `supabase/migrations/001_initial.sql` (§14.1의 6개 테이블 — users, projects, decompositions, steps, reasoning_logs, schedule_assignments)
-- [ ] `supabase/migrations/002_rls.sql` (모든 테이블에 user_id 기반 RLS 정책)
-- [ ] Supabase Studio에서 마이그레이션 실행 + 테이블 확인
+- [x] `supabase/migrations/001_initial.sql` (§14.1의 6개 테이블 — users, projects, decompositions, steps, reasoning_logs, schedule_assignments)
+- [x] `supabase/migrations/002_rls.sql` (모든 테이블에 user_id 기반 RLS 정책)
+- [x] Supabase Studio에서 마이그레이션 실행 + 테이블 확인
 
 ### J2. 인증 + 세션 가드 — **지희**
 
