@@ -20,7 +20,7 @@
 | AI 분해 백엔드 (DECOMPOSE) | 완전 + Prompt Cache + VALIDATE 2층 |
 | 결과 4블록 UI | 완전 (Refine은 "더 잘게/더 크게" 두 버튼만) |
 | 확정 → DB 저장 | 완전 |
-| Supabase 인증 | 완전 (Email + Magic Link) |
+| Supabase 인증 | 완전 (Email + Password) |
 | 전체 탭 (목록 + 상세) | 완전 |
 | 단계 체크 + 진행률 갱신 | 완전 |
 | 타이머 (단순 카운트다운) | 완전 |
@@ -190,10 +190,13 @@
 **산출물**:
 - [x] `frontend/src/lib/supabase.ts` (anon 키)
 - [x] `backend/src/lib/supabase.ts` (service_role 키)
-- [x] `pages/LoginPage.tsx` (Supabase Auth UI 또는 자체 폼 — Email + Magic Link)
+- [x] `pages/LoginPage.tsx` (자체 폼 — Email + Password 로그인/회원가입)
 - [x] `components/SessionGuard.tsx` (세션 없으면 /login으로 redirect)
 - [x] `backend/src/middleware/auth.ts` (Authorization JWT 검증 → req.userId)
 - [x] `backend/src/routes/me.ts` (GET /api/me — 본인 프로필 반환)
+- [x] `backend/src/env.ts` (백엔드 환경변수 zod 검증)
+- [x] `frontend/src/App.tsx` (`/login` 라우트 + 보호 라우트 연결)
+- [x] `backend/src/index.ts` (`/api/me` 라우트 연결)
 
 ### J3. 프로젝트 라우트 + 전체 탭 목록 — **지희**
 
@@ -211,6 +214,9 @@
 - [x] `components/all/ProjectCard.tsx` (일반 카드 — 색상 점·진행률 바·다음 단계 박스·삭제 버튼)
 - [x] `components/all/SingleCard.tsx` (단일 카드 — 체크박스만)
 - [x] D-Day 그룹핑 + 빈 상태 (§10.2.5)
+- [x] `frontend/src/services/projects.ts` (`/api/projects` 호출 함수)
+- [x] `backend/src/index.ts` (`/api/projects` 라우트 연결)
+- [x] `backend/src/middleware/auth.ts` (`public.users` 프로필 upsert 보강)
 
 ### J4. 프로젝트 상세 화면 — **지희**
 
