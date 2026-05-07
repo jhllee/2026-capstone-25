@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import AllPage from "./pages/AllPage";
 import LoginPage from "./pages/LoginPage";
 import MePage from "./pages/MePage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 
 // 각 탭의 placeholder
 function CalendarPage() {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/all" element={<AllPage />} />
+          <Route path="/all/:id" element={<ProjectDetailPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/me" element={<MePage />} />
         </Route>
