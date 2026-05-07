@@ -4,6 +4,7 @@ import SessionGuard from "./components/SessionGuard";
 import HomePage from "./pages/HomePage";
 import AllPage from "./pages/AllPage";
 import LoginPage from "./pages/LoginPage";
+import MePage from "./pages/MePage";
 
 // 각 탭의 placeholder
 function CalendarPage() {
@@ -11,9 +12,6 @@ function CalendarPage() {
 }
 function ReportPage() {
   return <h1 className="p-6 text-2xl font-bold">리포트</h1>;
-}
-function MePage() {
-  return <h1 className="p-6 text-2xl font-bold">나</h1>;
 }
 
 export default function App() {
