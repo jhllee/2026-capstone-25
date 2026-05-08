@@ -1,4 +1,5 @@
 import { ChevronRight, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { ProjectSummary } from "../../services/projects";
 
 // AI로 분해된 일반 프로젝트 카드.
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function ProjectCard({ project, onDelete }: Props) {
+  const navigate = useNavigate();
   const isDone = project.progress >= 100;
 
   return (
@@ -19,7 +21,7 @@ export default function ProjectCard({ project, onDelete }: Props) {
           className="mt-1.5 w-2.5 h-2.5 rounded-full shrink-0"
           style={{ backgroundColor: project.color ?? "var(--color-ac)" }}
         />
-        <button type="button" className="min-w-0 flex-1 text-left">
+        <button type="button" className="min-w-0 flex-1 text-left" onClick={() => navigate(`/all/${project.id}`)}>
           <div className="flex items-center gap-2">
             <h2
               className={[
