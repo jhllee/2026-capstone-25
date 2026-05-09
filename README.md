@@ -1,77 +1,119 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Lvs6kcL8)
-# Welcome to GitHub
+# 🐾 한발짝 — AI 과업 분해 & 집중 관리 서비스
 
-캡스톤 팀 생성을 축하합니다.
+> 막막한 할 일, AI가 실행 가능한 단계로 나눠드립니다.
 
-## 팀소개 및 페이지를 꾸며주세요.
+---
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+## 🔗 목차
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+1. [💡 프로젝트 소개](#-프로젝트-소개)
+2. [🦾 주요 기능](#-주요-기능)
+3. [👋 팀원 소개](#-팀원-소개)
+4. [🌐 시스템 구조](#-시스템-구조)
+5. [🛠 기술 스택](#-기술-스택)
+6. [📝 소개 자료](#-소개-자료)
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+---
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+## 💡 프로젝트 소개
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+캘린더 앱은 이미 아는 일정을 배치하고, 할 일 앱은 이미 쪼개진 과업을 관리합니다.  
+**한발짝**은 그 앞 단계를 해결합니다.
 
+- ✅ **한발짝**은 Claude API 기반 2단계 Prompt Chaining으로 복잡한 과업을 **마일스톤 → 세부 청크**로 자동 분해합니다.
+- ✅ **한발짝**은 원형 타이머와 뽀모도로 모드로 분해된 과업을 **집중해서 실행**할 수 있도록 돕습니다.
+- ✅ **한발짝**은 주간 캘린더 배치, 단계 트리, 리포트를 통해 입력부터 완주까지 **끊김 없는 흐름**을 제공합니다.
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+---
 
-### 1. 프로잭트 소개
+## 🦾 주요 기능
 
-프로젝트
+### 📝 입력 & 템플릿
+- 학업·개발·글쓰기·취업·창작·생활·여행·건강 8개 카테고리 템플릿 제공
+- 예상 기간·규모·분해 예시를 미리 확인 후 선택
 
-### 2. 소개 영상
+### 🤖 AI 과업 분해
+- Claude API(Haiku 4.5) 기반 2단계 Prompt Chaining
+- 1단계: 마일스톤 도출 → 2단계: 각 마일스톤을 세부 청크로 분해
+- 6신호·3규칙 기반 분해 품질 관리
 
-프로젝트 소개하는 영상을 추가하세요
+### ⏱ 집중 타이머
+- SVG 기반 원형 타이머 및 뽀모도로 모드 지원
+- 집중 시간 누적 기록
 
-### 3. 팀 소개
+### 🌲 단계 트리 & 진행 관리
+- 분해 계보 시각화 및 드래그 정렬
+- 완료·진행·대기 상태 관리
 
-팀을 소개하세요.
+### 📅 캘린더 일정 배치
+- 주간·월간 캘린더에 청크 드래그 배치
+- 날짜별 투두 자동 정렬
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+### 📊 주간 리포트
+- 실행력·완료력·일정 신뢰도 자동 분석
+- 4주 추이 및 패턴 피드백 제공
 
-### 4. 사용법
+---
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+## 👋 팀원 소개
 
-### 5. 기타
+| 이름 | 역할 |
+|------|------|
+| [이재은](https://github.com/your-github) | 프론트엔드, AI 연동, Prompt Chaining 설계 |
+| [이지희](https://github.com/your-github) | 프론트엔드, DB 설계, RLS 정책, REST API 연동 |
 
-추가적인 내용은 자유롭게 작성하세요.
+---
 
+## 🌐 시스템 구조
 
-## Markdown을 사용하여 내용꾸미기
+> 시스템 구조 이미지 추가 예정
 
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
+---
 
-```markdown
-Syntax highlighted code block
+## 🛠 기술 스택
 
-# Header 1
-## Header 2
-### Header 3
+### 🖥️ Frontend
 
-- Bulleted
-- List
+| 항목 | 기술 |
+|------|------|
+| Framework | React |
+| Build Tool | Vite |
+| Styling | CSS Modules |
 
-1. Numbered
-2. List
+### 🖥️ Backend
 
-**Bold** and _Italic_ and `Code` text
+| 항목 | 기술 |
+|------|------|
+| Runtime | Node.js |
+| Framework | Express |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase RLS |
 
-[Link](url) and ![Image](src)
-```
+### 🤖 AI
 
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+| 항목 | 기술 |
+|------|------|
+| API | Claude API (Anthropic) |
+| Model | claude-haiku-4-5 |
+| 구조 | 2단계 Prompt Chaining |
 
-### Support or Contact
+### 🔧 Common
 
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+| 항목 | 기술 |
+|------|------|
+| Version Control | Git, GitHub |
+| Design | Figma |
+| Communication | Notion |
+
+---
+
+## 📝 소개 자료
+
+- [📊 중간 발표 자료](#)
+- [📝 중간 보고서](#)
+- [🎬 시연 영상](#)
+- [🖼️ 포스터](#)
+
+---
+
+© 2026 한발짝 · CAPSTONE DESIGN 25조
