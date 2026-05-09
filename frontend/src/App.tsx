@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import AllPage from "./pages/AllPage";
 import LoginPage from "./pages/LoginPage";
 import MePage from "./pages/MePage";
+import ResultPage from "./pages/ResultPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import TimerPage from "./pages/TimerPage";
 
@@ -33,6 +34,7 @@ export default function App() {
           }
         >
           <Route path="/" element={<HomePage />} />
+          <Route path="/result" element={<ResultPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/all" element={<AllPage />} />
           <Route path="/all/:id" element={<ProjectDetailPage />} />
