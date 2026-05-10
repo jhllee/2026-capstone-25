@@ -1,10 +1,12 @@
 // 프로젝트 상세 페이지 — 진행률 카드 + 단계 목록 + 하단 액션(수정·삭제·목록으로).
+// isEditing 모드에서는 StepEditor로 단계를 편집하고 저장 시 새 round decomposition을 생성한다.
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import ProgressCard from "../components/detail/ProgressCard";
 import StepRow from "../components/detail/StepRow";
-import { deleteProject, getProject, toggleStep, type ProjectDetail, type StepDetail } from "../services/projects";
+import StepEditor, { type EditableStep } from "../components/edit/StepEditor";
+import { deleteProject, editSteps, getProject, toggleStep, type ProjectDetail, type StepDetail } from "../services/projects";
 
 // YYYY-MM-DD → D-day 문자열 계산
 function getDdayText(due: string | null): string {
@@ -35,6 +37,11 @@ export default function ProjectDetailPage() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");
 
+  // 편집 모드 상태 — isEditing: true 시 StepEditor 표시
+  const [isEditing, setIsEditing] = useState(false);
+  const [editableSteps, setEditableSteps] = useState<EditableStep[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     if (!id) return;
     setStatus("loading");
@@ -61,6 +68,42 @@ export default function ProjectDetailPage() {
     } catch {
       // 실패 시 롤백
       setProject({ ...project, steps: prevSteps });
+    }
+  }
+
+  // 편집 모드 진입 — 현재 단계를 EditableStep 형태로 복사
+  function handleEditStart() {
+    if (!project) return;
+    setEditableSteps(
+      project.steps.map((s) => ({ id: s.id, tempId: s.id, title: s.title })),
+    );
+    setIsEditing(true);
+  }
+
+  // 편집 취소 — 원래 상태로 복원
+  function handleEditCancel() {
+    setIsEditing(false);
+    setEditableSteps([]);
+  }
+
+  // 편집 저장 — 빈 제목 검사 후 PATCH 호출, 성공 시 최신 데이터 재조회
+  async function handleEditSave() {
+    if (!project || !id) return;
+    if (editableSteps.some((s) => !s.title.trim())) {
+      alert("단계 제목을 모두 입력해 주세요.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await editSteps(id, editableSteps.map((s) => ({ id: s.id, title: s.title.trim() })));
+      const updated = await getProject(id);
+      setProject(updated);
+      setIsEditing(false);
+      setEditableSteps([]);
+    } catch {
+      alert("저장하지 못했어요. 다시 시도해 주세요.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -130,49 +173,75 @@ export default function ProjectDetailPage() {
         color={project.color}
       />
 
-      {/* ── 단계 목록 ── */}
+      {/* ── 단계 목록 / 편집기 ── */}
       <div>
-        <p className="text-xs font-bold text-mu mb-3 px-1">단계별 진행 상황</p>
-        <div className="space-y-2.5">
-          {project.steps.map((step, i) => (
-            <StepRow
-              key={step.id}
-              step={step}
-              index={i}
-              isNext={step.id === nextStepId}
-              color={project.color}
-              onToggle={handleToggle}
-            />
-          ))}
-        </div>
+        <p className="text-xs font-bold text-mu mb-3 px-1">
+          {isEditing ? "단계 편집" : "단계별 진행 상황"}
+        </p>
+        {isEditing ? (
+          <StepEditor steps={editableSteps} onChange={setEditableSteps} busy={isSaving} />
+        ) : (
+          <div className="space-y-2.5">
+            {project.steps.map((step, i) => (
+              <StepRow
+                key={step.id}
+                step={step}
+                index={i}
+                isNext={step.id === nextStepId}
+                color={project.color}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* ── 하단 액션 — 수정 · 삭제 · 목록으로 ── */}
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-2.5 items-center pt-2">
-        {/* 수정하기 — R4(결과 4블록) 완성 후 연결 예정 */}
-        <button
-          type="button"
-          disabled
-          className="rounded-xl border border-bd bg-sf px-4 py-3 text-sm font-black text-mu text-center opacity-50"
-        >
-          수정하기
-        </button>
-        <button
-          type="button"
-          onClick={() => void handleDelete()}
-          className="w-11 h-11 border border-bd rounded-xl bg-sf text-red-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors"
-          aria-label="프로젝트 삭제"
-        >
-          <Trash2 size={18} />
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate("/all")}
-          className="rounded-xl border border-bd bg-sf px-4 py-3 text-sm font-black text-tx text-center hover:bg-fa transition-colors"
-        >
-          목록으로
-        </button>
-      </div>
+      {/* ── 하단 액션 ── */}
+      {isEditing ? (
+        <div className="flex gap-2.5 pt-2">
+          <button
+            type="button"
+            onClick={handleEditCancel}
+            disabled={isSaving}
+            className="flex-1 rounded-xl border border-bd bg-sf px-4 py-3 text-sm font-black text-mu text-center hover:bg-fa transition-colors disabled:opacity-50"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleEditSave()}
+            disabled={isSaving}
+            className="flex-1 rounded-xl bg-ac text-white px-4 py-3 text-sm font-black text-center disabled:opacity-60"
+          >
+            {isSaving ? "저장 중…" : "저장하기"}
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-[1fr_auto_1fr] gap-2.5 items-center pt-2">
+          <button
+            type="button"
+            onClick={handleEditStart}
+            className="rounded-xl border border-bd bg-sf px-4 py-3 text-sm font-black text-tx text-center hover:bg-fa transition-colors"
+          >
+            수정하기
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            className="w-11 h-11 border border-bd rounded-xl bg-sf text-red-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 transition-colors"
+            aria-label="프로젝트 삭제"
+          >
+            <Trash2 size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/all")}
+            className="rounded-xl border border-bd bg-sf px-4 py-3 text-sm font-black text-tx text-center hover:bg-fa transition-colors"
+          >
+            목록으로
+          </button>
+        </div>
+      )}
     </div>
   );
 }
