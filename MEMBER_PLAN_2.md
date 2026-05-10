@@ -216,14 +216,18 @@
 | **PR 브랜치** | `feat/project-edit` |
 
 **산출물**:
-- [ ] `pages/ProjectDetailPage.tsx`에 편집 모드 토글 상태
-- [ ] `components/detail/StepEditor.tsx` (제목 input + 삭제 버튼 + 드래그 핸들)
-- [ ] 드래그 순서 변경 — `@dnd-kit/sortable` 또는 동급(사용자 확인 후 추가)
-- [ ] `backend/src/routes/projects.ts`에 `PATCH /api/projects/:id/steps` 또는 `POST /api/projects/:id/decompositions` — 새 round로 저장
-- [ ] `backend/src/schemas/project.ts`에 `EditStepsSchema` 추가
+- [x] `pages/ProjectDetailPage.tsx`에 편집 모드 토글 상태
+- [x] `components/edit/StepEditor.tsx` (제목 input + 삭제 버튼 + ▲/▼ 순서 변경) — R6 공용 컴포넌트로 위치 변경
+- [x] ▲/▼ 버튼 순서 변경 (드래그 대신 버튼 방식으로 합의)
+- [x] `backend/src/routes/projects.ts`에 `PATCH /api/projects/:id/steps` — 새 round로 저장
+- [x] `backend/src/schemas/project.ts`에 `EditStepsSchema` 추가
+- [x] 편집 중 단계 추가 시 임시 tempId 부여, 저장 시 백엔드에서 신규 발급
 - [ ] 이전 버전 복원 — `GET /api/projects/:id?round=N` 또는 별도 엔드포인트
-- [ ] 진행률은 최신 round의 done 비율 기준
-- [ ] 편집 중 단계 추가 시 임시 id(`tmp-1` 등) 부여, 저장 시 백엔드에서 `s1, s2, ...` 재발급
+- [ ] 진행률은 최신 round의 done 비율 기준 (현재도 최신 round 기준으로 동작)
+
+**J7 추가 산출물**:
+- [x] `frontend/src/services/projects.ts`에 `editSteps()` 추가 — PATCH 호출 함수
+- [x] `components/edit/` 폴더 신규 생성 — R6·J7 공용 편집 컴포넌트 디렉토리
 
 ### J8. 캘린더 탭 — **지희**
 
