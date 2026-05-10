@@ -98,6 +98,19 @@ export async function deleteProject(id: string) {
   }
 }
 
+// 단계 목록을 편집 저장한다 — 새 round decomposition을 생성한다.
+export async function editSteps(projectId: string, steps: { id?: string; title: string }[]) {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/steps`, {
+    method: "PATCH",
+    headers: await authHeaders(),
+    body: JSON.stringify({ steps }),
+  });
+
+  if (!response.ok) {
+    throw new Error("단계 수정을 저장하지 못했어요.");
+  }
+}
+
 // 단계 완료 여부를 토글한다. done: true → 완료, false → 미완료.
 export async function toggleStep(id: string, done: boolean) {
   const response = await fetch(`${API_BASE_URL}/api/steps/${id}`, {

@@ -29,3 +29,14 @@ export const CreateProjectSchema = z.object({
 });
 
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
+
+// PATCH /api/projects/:id/steps 요청 body 검증용 스키마.
+// id가 없으면 신규 단계, 있으면 기존 단계 메타데이터를 복사한다.
+export const EditStepsSchema = z.object({
+  steps: z.array(
+    z.object({
+      id: z.string().optional(),
+      title: z.string().min(1),
+    }),
+  ).min(1),
+});
