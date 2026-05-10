@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { authMiddleware } from "../middleware/auth.js";
 import { supabase } from "../lib/supabase.js";
-import { CreateProjectSchema, CreateStepSchema } from "../schemas/project.js";
+import { CreateProjectSchema, CreateStepSchema, EditStepsSchema } from "../schemas/project.js";
 
 // 전체 탭에서 쓰는 프로젝트 API.
 // 프로젝트 생성, 목록 조회, 삭제를 담당한다.
@@ -277,6 +277,85 @@ router.post("/", async (req, res) => {
   }
 
   res.status(201).json({ id: project.id });
+});
+
+// 단계 인라인 편집 — 새 round decomposition을 생성하고 편집된 단계들을 저장한다.
+// 기존 단계 id가 있으면 메타데이터(가이드·설명 등)를 복사하고, 없으면 새 단계로 추가한다.
+router.patch("/:id/steps", async (req, res) => {
+  const { id } = req.params;
+
+  const parsed = EditStepsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: z.flattenError(parsed.error) });
+    return;
+  }
+
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", req.userId)
+    .single();
+
+  if (projectError || !project) {
+    res.status(404).json({ error: "프로젝트를 찾을 수 없어요." });
+    return;
+  }
+
+  const { data: latestDecomps } = await supabase
+    .from("decompositions")
+    .select("id, round")
+    .eq("project_id", id)
+    .order("round", { ascending: false })
+    .limit(1);
+
+  const latestRound = latestDecomps?.[0]?.round ?? 0;
+  const latestDecompId = latestDecomps?.[0]?.id ?? null;
+
+  // 기존 단계 메타데이터 조회 (id 있는 단계에 복사하기 위해)
+  const existingStepMap = new Map<string, StepDetailRow>();
+  if (latestDecompId) {
+    const { data: existingSteps } = await supabase
+      .from("steps")
+      .select("id, decomposition_id, order_idx, title, done, estimated_minutes, description, guide, boundary_signal")
+      .eq("decomposition_id", latestDecompId);
+    for (const s of (existingSteps ?? []) as StepDetailRow[]) {
+      existingStepMap.set(s.id, s);
+    }
+  }
+
+  const { data: newDecomp, error: decompError } = await supabase
+    .from("decompositions")
+    .insert({ project_id: id, round: latestRound + 1, trigger: "edit" })
+    .select("id")
+    .single();
+
+  if (decompError || !newDecomp) {
+    res.status(500).json({ error: decompError?.message ?? "Failed to create decomposition" });
+    return;
+  }
+
+  const stepsToInsert = parsed.data.steps.map((step, index) => {
+    const existing = step.id ? existingStepMap.get(step.id) : null;
+    return {
+      decomposition_id: newDecomp.id,
+      order_idx: index,
+      title: step.title,
+      description: existing?.description ?? null,
+      guide: existing?.guide ?? null,
+      boundary_signal: existing?.boundary_signal ?? null,
+      estimated_minutes: existing?.estimated_minutes ?? null,
+      done: false,
+    };
+  });
+
+  const { error: stepsError } = await supabase.from("steps").insert(stepsToInsert);
+  if (stepsError) {
+    res.status(500).json({ error: stepsError.message });
+    return;
+  }
+
+  res.status(200).json({ ok: true });
 });
 
 router.delete("/:id", async (req, res) => {
