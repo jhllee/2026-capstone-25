@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { decompose } from "../services/decompose";
+import { createProject, type CreateProjectInput } from "../services/projects";
 import type {
   ConfirmActionId,
   DecomposeApiResponse,
   DecomposeRequest,
   RefineMode,
 } from "../schemas/decompose";
-import ResultBlock from "./result/ResultBlock";
-import ReasoningBlock from "./result/ReasoningBlock";
-import RefineBlock from "./result/RefineBlock";
-import ConfirmBlock from "./result/ConfirmBlock";
+import ResultBlock from "../components/result/ResultBlock";
+import ReasoningBlock from "../components/result/ReasoningBlock";
+import RefineBlock from "../components/result/RefineBlock";
+import ConfirmBlock from "../components/result/ConfirmBlock";
 
 // 결과 화면 진입 시 location.state 로 전달되는 입력. HomePage 의 navigate 와 모양을 맞춘다.
 type LocationState = { input?: DecomposeRequest };
@@ -26,6 +27,7 @@ export default function ResultPage() {
   const [data, setData] = useState<DecomposeApiResponse | null>(null);
   const [history, setHistory] = useState<DecomposeApiResponse[]>([]);
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // initialInput 이 없으면 입력 화면으로 돌려보낸다.
@@ -76,18 +78,28 @@ export default function ResultPage() {
     });
   }
 
-  function onConfirmAction(id: ConfirmActionId) {
-    // 저장 흐름은 별도 PR 의 책임. 여기서는 흐름만 연결한다.
+  async function onConfirmAction(id: ConfirmActionId) {
     if (id === "back") {
       navigate("/");
       return;
     }
     if (id === "save" || id === "save-single") {
-      // TODO: 실제 저장 API 와 연결되면 navigate("/all") 로 이동한다.
-      alert(id === "save" ? "확정 저장은 아직 연결되지 않았어요." : "단일 저장은 아직 연결되지 않았어요.");
+      if (!input || !data || saving) return;
+      setSaving(true);
+      setError(null);
+      try {
+        const payload = buildCreateProjectInput(input, data, id === "save-single");
+        await createProject(payload);
+        navigate("/all");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "프로젝트를 저장하지 못했어요.");
+      } finally {
+        setSaving(false);
+      }
       return;
     }
     if (id === "edit") {
+      // J7 StepEditor 머지 후 연결 예정.
       alert("직접 수정 모드는 아직 연결되지 않았어요.");
       return;
     }
@@ -116,7 +128,9 @@ export default function ResultPage() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-[720px] mx-auto w-full">
-      {busy && <BusyBar />}
+      {(busy || saving) && (
+        <BusyBar text={saving ? "프로젝트를 저장하는 중…" : "다시 분해하는 중…"} />
+      )}
       {error && (
         <div className="mb-3 text-[12.5px] text-rd bg-rd-s border border-rd-s rounded-[10px] px-3 py-2">
           {error}
@@ -127,20 +141,55 @@ export default function ResultPage() {
       <ReasoningBlock reasoning={data.reasoning} />
       <RefineBlock
         onRefine={onRefine}
-        busy={busy}
+        busy={busy || saving}
         historyCount={history.length}
         onRevert={onRevert}
       />
-      <ConfirmBlock onAction={onConfirmAction} busy={busy} />
+      <ConfirmBlock onAction={onConfirmAction} busy={busy || saving} />
     </div>
   );
 }
 
-function BusyBar() {
+// 분해 응답 + 입력을 백엔드 CreateProjectSchema 모양으로 매핑한다.
+// estimated_minutes는 백엔드 positive int 검증 — 0/음수면 보내지 않는다(undefined).
+// goal은 빈 문자열일 가능성에 대비해 입력 title을 fallback으로 둔다.
+function buildCreateProjectInput(
+  req: DecomposeRequest,
+  res: DecomposeApiResponse,
+  isSingle: boolean,
+): CreateProjectInput {
+  const analysis = res.result.analysis;
+  return {
+    title: req.title,
+    memo: req.memo?.trim() || undefined,
+    primaryType: analysis.primary_type || undefined,
+    secondaryTags: analysis.secondary_tags ?? [],
+    goal: analysis.goal?.trim() || req.title,
+    currentPhase: analysis.current_position?.phase_label || undefined,
+    startDate: req.startDate,
+    due: req.dueDate,
+    isSingle,
+    steps: isSingle
+      ? []
+      : res.result.steps
+          .filter((s) => s.parent_step_id === null) // 1차 단계만 — 2차 분해는 R7에서 트리 저장으로 별도 처리
+          .map((s) => ({
+            title: s.title,
+            description: s.description || undefined,
+            guide: s.guide || undefined,
+            firstMove: s.first_move || undefined,
+            unblocker: s.unblocker || undefined,
+            estimatedMinutes: s.estimated_minutes > 0 ? s.estimated_minutes : undefined,
+            boundarySignal: s.boundary_signal || undefined,
+          })),
+  };
+}
+
+function BusyBar({ text = "다시 분해하는 중…" }: { text?: string }) {
   return (
     <div className="flex items-center gap-2 mb-3 text-[12.5px] text-tx2 bg-fa border border-bd2 rounded-[10px] px-3 py-2">
       <span className="w-3 h-3 rounded-full border-2 border-ac-s2 border-t-ac animate-spin" />
-      다시 분해하는 중…
+      {text}
     </div>
   );
 }
