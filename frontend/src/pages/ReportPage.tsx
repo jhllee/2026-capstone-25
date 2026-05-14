@@ -3,6 +3,8 @@ import { getWeeklyReport, type WeeklyReport } from "../services/report";
 import AutoComment from "../components/report/AutoComment";
 import WeeklySummary from "../components/report/WeeklySummary";
 import ProjectBreakdown from "../components/report/ProjectBreakdown";
+import UserTypeCard from "../components/report/UserTypeCard";
+import NextWeekSuggestion from "../components/report/NextWeekSuggestion";
 
 export default function ReportPage() {
   const [report, setReport] = useState<WeeklyReport | null>(null);
@@ -27,8 +29,10 @@ export default function ReportPage() {
       {status === "ready" && report && (
         <>
           <AutoComment weeks={report.weeks} projects={report.projects} />
+          <UserTypeCard userType={report.userType} />
           <WeeklySummary weeks={report.weeks} />
           <ProjectBreakdown projects={report.projects} />
+          <NextWeekSuggestion weeks={report.weeks} projects={report.projects} />
         </>
       )}
     </div>
