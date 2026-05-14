@@ -51,6 +51,11 @@ router.post("/steps/:id/time", async (req, res) => {
     return;
   }
 
+  // 세션 기록 — 리포트 주차별 집계에 사용. 실패해도 타이머 응답은 성공으로 처리.
+  await supabase
+    .from("timer_sessions")
+    .insert({ step_id: id, user_id: req.userId, mins: parsed.data.minutes });
+
   res.status(204).send();
 });
 
