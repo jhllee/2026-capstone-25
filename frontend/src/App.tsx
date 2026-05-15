@@ -9,9 +9,7 @@ import ResultPage from "./pages/ResultPage";
 import ProjectDetailPage from "./pages/ProjectDetailPage";
 import TimerPage from "./pages/TimerPage";
 import CalendarPage from "./pages/CalendarPage";
-function ReportPage() {
-  return <h1 className="p-6 text-2xl font-bold">리포트</h1>;
-}
+import ReportPage from "./pages/ReportPage";
 
 export default function App() {
   return (
