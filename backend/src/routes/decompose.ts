@@ -1,12 +1,16 @@
 import { Router } from "express";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "../env.js";
+import { supabase } from "../lib/supabase.js";
+import { extract, ExtractError, type Extracted } from "../lib/extract.js";
 import { DECOMPOSE_SYSTEM_PROMPT } from "../prompts/decompose-system.js";
 import {
   DecomposeRequestSchema,
   SubDecomposeRequestSchema,
   DecomposeResultSchema,
+  type AttachmentRef,
   type DecomposeRequest,
   type SubDecomposeRequest,
   type DecomposeResult,
@@ -14,19 +18,105 @@ import {
 } from "../schemas/decompose.js";
 import { validate, type ValidationIssue } from "../validate/index.js";
 
+const ATTACHMENTS_BUCKET = "decompose-attachments";
+
+// 같은 분해 세션에서 사용자가 재분해 칩을 누르면 같은 path가 다시 들어온다.
+// path → 파일 hash → Extracted 결과를 모듈 스코프 Map 으로 들고 있어 PDF/DOCX 파싱 CPU 를 절약한다.
+// 프로세스 재시작 시 비워진다 — TTL 불필요.
+const extractCache = new Map<string, Extracted>();
+
 const router = Router();
 
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
 // 모드별 입력을 한 묶음으로 다룬다. kind에 따라 primary(1차) / secondary(2차) 분기.
 type AnyDecomposeInput =
-  | { kind: "primary"; data: DecomposeRequest }
+  | { kind: "primary"; data: DecomposeRequest; attachments?: Extracted[] }
   | { kind: "secondary"; data: SubDecomposeRequest };
+
+// Anthropic SDK 의 user content block 타입.
+// text/document/image 가 한 messages.create 호출의 user content 배열 안에 혼합 가능.
+type UserContentBlock = Anthropic.Messages.TextBlockParam | Anthropic.Messages.ImageBlockParam | Anthropic.Messages.DocumentBlockParam;
+
+// AttachmentRef → Extracted 변환. Storage 에서 다운로드 후 형식별 추출.
+// 같은 path 가 이미 캐시에 있으면 그대로 재사용 (재분해 시 비용 절감).
+async function downloadAndExtract(refs: AttachmentRef[]): Promise<Extracted[]> {
+  const results: Extracted[] = [];
+  for (const ref of refs) {
+    // Storage path 자체를 1차 캐시 키로 쓴다. 같은 path 는 같은 파일이라는 전제(hash-prefixed 객체명).
+    const cached = extractCache.get(ref.path);
+    if (cached) {
+      console.log(`[decompose:extract] cache HIT (path) ${ref.filename} → ${ref.path}`);
+      results.push(cached);
+      continue;
+    }
+
+    console.log(`[decompose:extract] cache MISS, downloading ${ref.filename} from Storage`);
+    const { data: blob, error } = await supabase.storage
+      .from(ATTACHMENTS_BUCKET)
+      .download(ref.path);
+    if (error || !blob) {
+      throw new ExtractError(ref.filename, error?.message ?? "Storage 다운로드 실패");
+    }
+
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    // 추가 안전망 — 객체명 prefix 의 hash 와 실제 내용 hash 가 다르면 캐시 키를 내용 기반으로 한 번 더 부여한다.
+    const sha = createHash("sha256").update(buffer).digest("hex");
+    const contentKey = `sha256:${sha}`;
+    const cachedByHash = extractCache.get(contentKey);
+    if (cachedByHash) {
+      console.log(`[decompose:extract] cache HIT (hash) ${ref.filename} → ${sha.slice(0, 12)}…`);
+      extractCache.set(ref.path, cachedByHash);
+      results.push(cachedByHash);
+      continue;
+    }
+
+    console.log(`[decompose:extract] extracting ${ref.filename} (${buffer.length} bytes, sha=${sha.slice(0, 12)}…)`);
+    const extracted = await extract(buffer, ref.filename, ref.contentType);
+    extractCache.set(ref.path, extracted);
+    extractCache.set(contentKey, extracted);
+    results.push(extracted);
+  }
+  return results;
+}
+
+// 추출된 첨부를 Anthropic content block 배열로 변환.
+// text/docx → text block · pdf → document block · 이미지 → image block.
+function attachmentsToBlocks(items: Extracted[]): UserContentBlock[] {
+  const blocks: UserContentBlock[] = [];
+  for (const item of items) {
+    if (item.kind === "text") {
+      blocks.push({
+        type: "text",
+        text: `# 첨부 파일 — ${item.filename}\n${item.text}`,
+      });
+    } else if (item.kind === "document") {
+      blocks.push({
+        type: "text",
+        text: `# 첨부 파일 — ${item.filename} (PDF)`,
+      });
+      blocks.push({
+        type: "document",
+        source: { type: "base64", media_type: item.mediaType, data: item.dataBase64 },
+      });
+    } else {
+      blocks.push({
+        type: "text",
+        text: `# 첨부 이미지 — ${item.filename}`,
+      });
+      blocks.push({
+        type: "image",
+        source: { type: "base64", media_type: item.mediaType, data: item.dataBase64 },
+      });
+    }
+  }
+  return blocks;
+}
 
 function buildUserMessage(
   input: AnyDecomposeInput,
   previousIssues?: ValidationIssue[],
-): string {
+): UserContentBlock[] {
   const lines: string[] = [];
 
   if (input.kind === "primary") {
@@ -111,8 +201,22 @@ function buildUserMessage(
     );
   }
 
-  lines.push("위 입력을 시스템 프롬프트 내용에 따라 분해하라. JSON 단일 객체만 출력.");
-  return lines.join("\n\n");
+  const introText = lines.join("\n\n");
+
+  // 1차 분해의 첨부는 도입부 텍스트와 마무리 지시 사이에 끼워 넣는다.
+  // (도입부 → 첨부 블록들 → 마무리 지시 순서로 모델이 읽도록.)
+  const attachmentBlocks: UserContentBlock[] =
+    input.kind === "primary" && input.attachments && input.attachments.length > 0
+      ? attachmentsToBlocks(input.attachments)
+      : [];
+
+  const closingText = "위 입력을 시스템 프롬프트 내용에 따라 분해하라. JSON 단일 객체만 출력.";
+
+  return [
+    { type: "text", text: introText },
+    ...attachmentBlocks,
+    { type: "text", text: closingText },
+  ];
 }
 
 // AI 응답 텍스트에서 첫 번째 균형 잡힌 JSON 객체를 추출한다.
@@ -209,7 +313,9 @@ async function decomposeOnce(
 // 1. 분해 호출 → (실패 시 1회 재시도)
 // 2. 2차 분해는 parent_step_id 강제 주입
 // 3. validate → blocker가 있으면 직전 issue를 들려주고 1회 재시도 (warning은 노출만)
-async function runDecompose(input: AnyDecomposeInput): Promise<{
+async function runDecompose(
+  input: AnyDecomposeInput,
+): Promise<{
   status: number;
   body: DecomposeApiResponse | { error: string };
 }> {
@@ -267,8 +373,24 @@ router.post("/", async (req, res) => {
     return;
   }
 
+  // 첨부가 있으면 Storage 에서 다운로드 후 추출. 추출 실패는 422 로 사용자 친화 메시지.
+  let attachments: Extracted[] | undefined;
+  if (parsed.data.attachments && parsed.data.attachments.length > 0) {
+    try {
+      attachments = await downloadAndExtract(parsed.data.attachments);
+    } catch (error) {
+      if (error instanceof ExtractError) {
+        res.status(422).json({
+          error: `첨부 파일 처리 실패: ${error.filename} — ${error.reason}`,
+        });
+        return;
+      }
+      throw error;
+    }
+  }
+
   try {
-    const result = await runDecompose({ kind: "primary", data: parsed.data });
+    const result = await runDecompose({ kind: "primary", data: parsed.data, attachments });
     res.status(result.status).json(result.body);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Anthropic call failed";
