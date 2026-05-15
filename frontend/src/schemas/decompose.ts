@@ -5,6 +5,15 @@ import { z } from "zod";
 export const RefineModeSchema = z.enum(["smaller", "larger", "feedback"]);
 export type RefineMode = z.infer<typeof RefineModeSchema>;
 
+// 직전 분해 결과 압축 — refineMode === "feedback" 일 때만 의미 있음.
+// backend/src/schemas/decompose.ts 와 동일 모양을 유지한다.
+export const PreviousStepSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string(),
+});
+export type PreviousStep = z.infer<typeof PreviousStepSchema>;
+
 export const DecomposeRequestSchema = z.object({
   title: z.string().min(1).max(500),
   memo: z.string().max(5000).optional(),
@@ -13,6 +22,7 @@ export const DecomposeRequestSchema = z.object({
   templateHint: z.string().max(2000).optional(),
   refineMode: RefineModeSchema.optional(),
   refineFeedback: z.string().max(2000).optional(),
+  previousSteps: z.array(PreviousStepSchema).max(30).optional(),
 });
 
 export type DecomposeRequest = z.infer<typeof DecomposeRequestSchema>;

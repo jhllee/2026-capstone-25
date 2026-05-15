@@ -11,7 +11,7 @@ import type {
 } from "../schemas/decompose";
 import ResultBlock from "../components/result/ResultBlock";
 import ReasoningBlock from "../components/result/ReasoningBlock";
-import RefineBlock from "../components/result/RefineBlock";
+import RefineBlock, { type HistoryPreview } from "../components/result/RefineBlock";
 import ConfirmBlock from "../components/result/ConfirmBlock";
 import StepEditor, { type EditableStep } from "../components/edit/StepEditor";
 
@@ -102,7 +102,7 @@ export default function ResultPage() {
   const [isEditing, setIsEditing] = useState(hydratedCache?.isEditing ?? false);
   const [editableSteps, setEditableSteps] = useState<EditableStep[]>(hydratedCache?.editableSteps ?? []);
 
-  // 2차 분해 호출 중인 부모 step id — 해당 카드의 "2단계 쪼개기" 버튼만 비활성화
+  // 2차 분해 호출 중인 부모 step id — 해당 카드의 "하위 단계로 쪼개기" 버튼만 비활성화
   const [busySubParentId, setBusySubParentId] = useState<string | null>(null);
 
   // initialInput 이 없으면 입력 화면으로 돌려보낸다.
@@ -154,17 +154,35 @@ export default function ResultPage() {
     }
   }
 
-  function onRefine(mode: RefineMode) {
+  function onRefine(mode: RefineMode, feedback?: string) {
     if (!input) return;
     // 자식이 하나라도 있으면 사용자에게 확인 — 재분해는 1차만 다시 뽑으므로 기존 2차는 고아가 되어 폐기된다.
     const hasChildren = !!data?.result.steps.some((s) => s.parent_step_id !== null);
     if (hasChildren) {
       const ok = window.confirm(
-        "다시 분해하면 직접 만들어둔 하위 단계가 모두 사라져요. 계속할까요?\n\n(돌리기로 이전 상태로 되돌릴 수 있어요)",
+        "다시 분해하면 직접 만들어둔 하위 단계가 모두 사라져요. 계속할까요?\n(돌리기로 이전 상태로 되돌릴 수 있어요)",
       );
       if (!ok) return;
     }
-    void runDecompose({ ...input, refineMode: mode }, { pushHistory: true });
+
+    const next: DecomposeRequest = { ...input, refineMode: mode };
+    if (mode === "feedback") {
+      // 피드백 모드만 직전 결과를 압축해서 같이 보낸다 — 사용자의 참조 표현("3번째 단계…") 해석 근거.
+      next.refineFeedback = feedback?.trim() || undefined;
+      const topLevel = (data?.result.steps ?? []).filter((s) => s.parent_step_id === null);
+      if (topLevel.length > 0) {
+        next.previousSteps = topLevel.map((s) => ({
+          id: s.id,
+          title: s.title,
+          description: s.description,
+        }));
+      }
+    } else {
+      // smaller/larger는 이전 호출 잔여 필드를 묻혀 보내지 않도록 명시적으로 비운다.
+      next.refineFeedback = undefined;
+      next.previousSteps = undefined;
+    }
+    void runDecompose(next, { pushHistory: true });
   }
 
   function onRevert() {
@@ -173,6 +191,18 @@ export default function ResultPage() {
       const last = prev[prev.length - 1];
       setData(last);
       return prev.slice(0, -1);
+    });
+  }
+
+  // 드롭다운에서 특정 버전을 골라 복원 — 선택한 버전을 화면으로, 현재 결과를 히스토리 끝에 push.
+  // 슬롯 상한 MAX_HISTORY 그대로 유지(앞에서 탈락).
+  function onRestoreVersion(index: number) {
+    setHistory((prev) => {
+      if (index < 0 || index >= prev.length || !data) return prev;
+      const target = prev[index];
+      const remaining = prev.filter((_, i) => i !== index);
+      setData(target);
+      return [...remaining, data].slice(-MAX_HISTORY);
     });
   }
 
@@ -207,7 +237,7 @@ export default function ResultPage() {
         },
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "2단계 쪼개기에 실패했어요.");
+      setError(e instanceof Error ? e.message : "하위 단계로 쪼개기에 실패했어요.");
     } finally {
       setBusySubParentId(null);
     }
@@ -392,8 +422,10 @@ export default function ResultPage() {
       <RefineBlock
         onRefine={onRefine}
         busy={busy || saving}
-        historyCount={history.length}
+        history={buildHistoryPreviews(history)}
         onRevert={onRevert}
+        onRestoreVersion={onRestoreVersion}
+        hasSubSteps={data.result.steps.some((s) => s.parent_step_id !== null)}
       />
       <ConfirmBlock onAction={onConfirmAction} busy={busy || saving} />
     </div>
@@ -480,6 +512,18 @@ function buildCreateProjectInput(
       return kids.length > 0 ? { ...base, children: kids.map(fromEdited) } : base;
     }),
   };
+}
+
+// 히스토리 스택을 RefineBlock의 드롭다운에서 쓸 미리보기 모양으로 압축.
+// 1차 단계만 카운트하고, 첫 번째 1차 단계의 title을 라벨로 쓴다.
+function buildHistoryPreviews(history: DecomposeApiResponse[]): HistoryPreview[] {
+  return history.map((v) => {
+    const top = v.result.steps.filter((s) => s.parent_step_id === null);
+    return {
+      stepCount: top.length,
+      firstTitle: top[0]?.title ?? "(단계 없음)",
+    };
+  });
 }
 
 function BusyBar({ text = "다시 분해하는 중…" }: { text?: string }) {
