@@ -1,6 +1,6 @@
 // 프로젝트 상세 페이지 — 진행률 카드 + 단계 목록 + 하단 액션(수정·삭제·목록으로).
 // isEditing 모드에서는 StepEditor로 단계를 편집하고 저장 시 새 round decomposition을 생성한다.
-// 2차 분해: 1차 단계의 "2단계 쪼개기" → decomposeSub → saveSubSteps → 재조회.
+// 2차 분해: 1차 단계의 "하위 단계로 쪼개기" → decomposeSub → saveSubSteps → 재조회.
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Trash2 } from "lucide-react";
@@ -145,7 +145,7 @@ export default function ProjectDetailPage() {
       const updated = await getProject(id);
       setProject(updated);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "2단계 쪼개기에 실패했어요.");
+      alert(err instanceof Error ? err.message : "하위 단계로 쪼개기에 실패했어요.");
     } finally {
       setBusySubParentId(null);
     }

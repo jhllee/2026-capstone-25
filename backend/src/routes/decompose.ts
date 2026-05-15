@@ -61,11 +61,30 @@ function buildUserMessage(
       );
     } else if (d.refineMode === "feedback") {
       const fb = d.refineFeedback?.trim();
-      lines.push(
-        fb
-          ? `# 재분해 지시 (사용자 피드백)\n${fb}`
-          : `# 재분해 지시\n사용자가 재생성을 요청했다. 같은 입력이지만 다른 경계 기준을 시도해 보라.`,
-      );
+      // 피드백 모드에 한해 직전 분해 결과를 함께 보낸다 — "3번째 단계가 모호해" 같은 참조 표현을 모델이 해석할 수 있도록.
+      // smaller/larger는 같은 입력에서 다른 입자도로 새로 그리는 일이라 직전 결과 없이 작동하므로 첨부하지 않는다.
+      // description은 토큰 폭주 가드로 200자 cap.
+      if (fb && d.previousSteps && d.previousSteps.length > 0) {
+        const previousBlock = [
+          `# 직전 분해 결과 (사용자가 지금 보고 있는 것)`,
+          ...d.previousSteps.map(
+            (s, i) =>
+              `${i + 1}. [${s.id}] ${s.title} — ${s.description.slice(0, 200)}`,
+          ),
+        ].join("\n");
+        lines.push(previousBlock);
+        lines.push(
+          `# 재분해 지시 (사용자 피드백)\n${fb}\n위 피드백을 직전 분해 결과에 비추어 해석해 다시 분해하라.`,
+        );
+      } else if (fb) {
+        // previousSteps 없이 피드백만 온 경우 — 텍스트만 전달.
+        lines.push(`# 재분해 지시 (사용자 피드백)\n${fb}`);
+      } else {
+        // 빈 피드백 폴백 — 직전 결과를 첨부하지 않아 anchoring을 피한다.
+        lines.push(
+          `# 재분해 지시\n사용자가 재생성을 요청했다. 같은 입력이지만 다른 경계 기준을 시도해 보라.`,
+        );
+      }
     }
   } else {
     const p = input.data.parent;

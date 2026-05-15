@@ -120,7 +120,7 @@ export default function StepRow({
             />
           )}
 
-          {/* 액션 버튼 — §10.3.3 ②: 하위 없으면 2단계 쪼개기 + 시작 + 체크, 있으면 세부 단계 수정 + 체크 */}
+          {/* 액션 버튼 — §10.3.3 ②: 하위 없으면 하위 단계로 쪼개기 + 시작 + 체크, 있으면 세부 단계 수정 + 체크 */}
           <div className="flex items-center justify-end gap-2 pt-1">
             <AssignDateButton stepId={step.id} />
             {hasChildren ? (
@@ -142,7 +142,7 @@ export default function StepRow({
                     className="inline-flex items-center gap-1 bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Split size={12} strokeWidth={2.5} />
-                    {busySubDecompose ? "쪼개는 중…" : "2단계 쪼개기"}
+                    {busySubDecompose ? "쪼개는 중…" : "하위 단계로 쪼개기"}
                   </button>
                 )}
                 {!step.done && (
