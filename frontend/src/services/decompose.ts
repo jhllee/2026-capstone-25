@@ -61,7 +61,7 @@ export async function decomposeSub(input: SubDecomposeInput): Promise<DecomposeA
 
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
-    throw new Error(`2단계 쪼개기에 실패했어요. (${response.status}) ${detail}`);
+    throw new Error(`하위 단계로 쪼개기에 실패했어요. (${response.status}) ${detail}`);
   }
 
   const json = (await response.json()) as unknown;

@@ -190,7 +190,7 @@ export default function StepEditor({ steps, onChange, busy = false }: Props) {
             </div>
           )}
 
-          {/* 하위 추가 — 자식이 이미 있는 단계에만 노출 (없는 단계는 "2단계 쪼개기"로 만들어야 의미가 있음) */}
+          {/* 하위 추가 — 자식이 이미 있는 단계에만 노출 (없는 단계는 "하위 단계로 쪼개기"로 만들어야 의미가 있음) */}
           {step.children && step.children.length > 0 && (
             <div className="pl-6">
               <button

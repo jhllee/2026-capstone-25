@@ -4,7 +4,7 @@ import type { Step } from "../../schemas/decompose";
 
 // §7.1 단계 카드. 접힘: 번호+제목+예상시간 뱃지. 펼침: §7.2 가이드 3문장.
 // subSteps: 2차 분해 결과(부모인 이 카드의 자식들). 빈 배열이면 leaf.
-// onSubDecompose: leaf일 때 노출되는 "2단계 쪼개기" 버튼이 호출.
+// onSubDecompose: leaf일 때 노출되는 "하위 단계로 쪼개기" 버튼이 호출.
 // onCancelSubSteps: 자식 박스의 "전체 취소" 버튼이 호출 — 메모리 트리에서 이 부모의 자식을 통째로 폐기.
 type Props = {
   step: Step;
@@ -127,7 +127,7 @@ export default function StepCard({
             </div>
           )}
 
-          {/* 액션 — 자식이 없는 leaf에만 "2단계 쪼개기" 노출 */}
+          {/* 액션 — 자식이 없는 leaf에만 "하위 단계로 쪼개기" 노출 */}
           {!hasChildren && onSubDecompose && (
             <div className="flex justify-end pt-1">
               <button
@@ -137,7 +137,7 @@ export default function StepCard({
                 className="inline-flex items-center gap-1 bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Split size={12} strokeWidth={2.5} />
-                {busySubDecompose ? "쪼개는 중…" : "2단계 쪼개기"}
+                {busySubDecompose ? "쪼개는 중…" : "하위 단계로 쪼개기"}
               </button>
             </div>
           )}
