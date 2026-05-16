@@ -5,7 +5,7 @@
 // children: 하위(2차 분해) 단계가 있으면 SubStepBox로 누적 표시하고 액션 버튼이 §10.3.3 ② 분기로 바뀐다.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, Check, Split, Pencil } from "lucide-react";
+import { ChevronDown, Check, Split } from "lucide-react";
 import type { StepDetail } from "../../services/projects";
 import SubStepBox from "./SubStepBox";
 
@@ -18,8 +18,6 @@ type Props = {
   busySubDecompose?: boolean;       // 2차 분해 호출 중 — 버튼 비활성
   onToggle: (id: string, done: boolean) => void;
   onSubDecompose: (parent: StepDetail) => void;
-  onEditSubSteps: (parent: StepDetail) => void;
-  onCancelSubSteps?: (parent: StepDetail) => void;
 };
 
 // 예상 시간을 사람이 읽기 쉬운 단위로 변환한다. 1일=720분, 1주=5400분 기준.
@@ -40,8 +38,6 @@ export default function StepRow({
   busySubDecompose = false,
   onToggle,
   onSubDecompose,
-  onEditSubSteps,
-  onCancelSubSteps,
 }: Props) {
   // 다음 단계는 기본으로 펼쳐진 상태로 시작
   const [expanded, setExpanded] = useState(isNext);
@@ -132,44 +128,30 @@ export default function StepRow({
               subSteps={subSteps}
               color={color}
               onToggle={onToggle}
-              onCancelSubSteps={onCancelSubSteps}
             />
           )}
 
           {/* 액션 버튼 — §10.3.3 ②: 하위 없으면 쪼개기+시작(미완료만), 있으면 수정. 완료+하위없음은 숨김 */}
           {(hasChildren || !step.done) && (
           <div className="flex items-center justify-end gap-2 pt-1">
-            {hasChildren ? (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onEditSubSteps(step); }}
-                className="inline-flex items-center gap-1 bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer"
-              >
-                <Pencil size={12} strokeWidth={2.5} />
-                수정
-              </button>
-            ) : (
+            {!hasChildren && !step.done && (
               <>
-                {!step.done && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); onSubDecompose(step); }}
-                    disabled={busySubDecompose}
-                    className="inline-flex items-center gap-1 bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Split size={12} strokeWidth={2.5} />
-                    {busySubDecompose ? "쪼개는 중…" : "하위 단계로 쪼개기"}
-                  </button>
-                )}
-                {!step.done && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); navigate(`/timer/${step.id}`); }}
-                    className="bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer"
-                  >
-                    시작
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onSubDecompose(step); }}
+                  disabled={busySubDecompose}
+                  className="inline-flex items-center gap-1 bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Split size={12} strokeWidth={2.5} />
+                  {busySubDecompose ? "쪼개는 중…" : "하위 단계로 쪼개기"}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/timer/${step.id}`); }}
+                  className="bg-fa text-tx2 border border-bd rounded-xl px-3 py-1.5 text-xs font-black hover:bg-ac-s hover:text-ac-d hover:border-ac transition-colors cursor-pointer"
+                >
+                  시작
+                </button>
               </>
             )}
           </div>
