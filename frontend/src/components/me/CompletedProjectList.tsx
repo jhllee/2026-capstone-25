@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { ProjectSummary } from "../../services/projects";
+import EmptyState from "../EmptyState";
 
 type Props = {
   projects: ProjectSummary[];
@@ -10,12 +11,7 @@ export default function CompletedProjectList({ projects }: Props) {
   const [openId, setOpenId] = useState<string | null>(null);
 
   if (projects.length === 0) {
-    return (
-      <div className="flex flex-col items-center py-12 gap-2">
-        <span className="text-3xl">🎯</span>
-        <p className="text-sm text-mu">완료한 프로젝트가 없어요</p>
-      </div>
-    );
+    return <EmptyState emoji="🎯" title="완료한 프로젝트가 없어요" />;
   }
 
   return (
