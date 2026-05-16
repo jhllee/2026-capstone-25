@@ -25,9 +25,9 @@ function getDday(due: string | null) {
   const dday = diff === 0 ? "D-Day" : diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`;
   // 초과·당일: 부드러운 레드 / 7일 이내: 앱 오렌지 계열 / 그 외: 크림 뱃지
   const urgencyClass =
-    diff <= 0 ? "bg-red-50 text-red-500 border border-red-200"
-    : diff <= 7 ? "bg-ac-s text-ac-d border border-ac-s2"
-    : "bg-fa text-mu border border-bd";
+    diff <= 0 ? "bg-red-300 text-red-900"
+    : diff <= 7 ? "bg-orange-200 text-orange-900"
+    : "bg-fa text-tx2 border border-bd";
 
   return { label: due, dday, urgencyClass };
 }

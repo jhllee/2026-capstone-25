@@ -85,6 +85,12 @@
   cursor: pointer;
 }
 
+/* Tailwind Preflight이 button cursor를 default로 리셋하므로 전역 복원 */
+@layer base {
+  button:not(:disabled) { cursor: pointer; }
+  input[type="date"]:not(:disabled) { cursor: pointer; }
+}
+
 /* 본문 — 프로토타입 body 와 동일 */
 html,
 body {
