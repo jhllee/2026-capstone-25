@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { DecomposeRequest } from "../schemas/decompose";
 import { createProject } from "../services/projects";
+import { useToast } from "../lib/toast";
 
 const ACCEPTED_FILE_EXT = [
   ".pdf",
@@ -37,6 +38,7 @@ type TabKey = "direct" | "template";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [tab, setTab] = useState<TabKey>("direct");
   const [files, setFiles] = useState<File[]>([]);
 
@@ -89,7 +91,7 @@ export default function HomePage() {
         });
         navigate("/all");
       } catch {
-        alert("할 일 추가에 실패했어요. 다시 시도해주세요.");
+        showToast("할 일 추가에 실패했어요. 다시 시도해주세요.");
       }
       return;
     }

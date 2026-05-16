@@ -23,6 +23,8 @@ import {
   type StepDetail,
 } from "../services/projects";
 import { decomposeSub } from "../services/decompose";
+import { useToast } from "../lib/toast";
+import LoadingState from "../components/LoadingState";
 
 // YYYY-MM-DD → D-day 문자열 계산
 function getDdayText(due: string | null): string {
@@ -50,6 +52,7 @@ function calcProgress(steps: StepDetail[]) {
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");
@@ -148,7 +151,7 @@ export default function ProjectDetailPage() {
       const updated = await getProject(id);
       setProject(updated);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "하위 단계로 쪼개기에 실패했어요.");
+      showToast(err instanceof Error ? err.message : "하위 단계로 쪼개기에 실패했어요.");
     } finally {
       setBusySubParentId(null);
     }
@@ -226,14 +229,14 @@ export default function ProjectDetailPage() {
   async function handleEditSave() {
     if (!project || !id) return;
     if (!editableTitle.trim()) {
-      alert("프로젝트 제목을 입력해 주세요.");
+      showToast("프로젝트 제목을 입력해 주세요.");
       return;
     }
     const emptyTitle = editableSteps.some(
       (s) => !s.title.trim() || (s.children ?? []).some((c) => !c.title.trim()),
     );
     if (emptyTitle) {
-      alert("단계 제목을 모두 입력해 주세요.");
+      showToast("단계 제목을 모두 입력해 주세요.");
       return;
     }
     setIsSaving(true);
@@ -258,7 +261,7 @@ export default function ProjectDetailPage() {
       setEditableStartDate("");
       setEditableDue("");
     } catch {
-      alert("저장하지 못했어요. 다시 시도해 주세요.");
+      showToast("저장하지 못했어요. 다시 시도해 주세요.");
     } finally {
       setIsSaving(false);
     }
@@ -273,7 +276,7 @@ export default function ProjectDetailPage() {
         const data = await listRounds(id);
         setRounds(data);
       } catch {
-        alert("버전 목록을 불러오지 못했어요.");
+        showToast("버전 목록을 불러오지 못했어요.");
         return;
       } finally {
         setIsLoadingRounds(false);
@@ -295,7 +298,7 @@ export default function ProjectDetailPage() {
       setShowHistory(false);
       setRounds([]);
     } catch {
-      alert("복원하지 못했어요. 다시 시도해 주세요.");
+      showToast("복원하지 못했어요. 다시 시도해 주세요.");
     } finally {
       setIsRestoring(false);
     }
@@ -318,11 +321,7 @@ export default function ProjectDetailPage() {
   }
 
   if (status === "loading") {
-    return (
-      <div className="px-4 py-16 text-center text-sm font-bold text-mu">
-        불러오는 중이에요
-      </div>
-    );
+    return <LoadingState title="프로젝트를 불러오고 있어요" className="max-w-[720px]" />;
   }
 
   if (status === "error" || !project) {

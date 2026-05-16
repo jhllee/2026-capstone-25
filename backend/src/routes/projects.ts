@@ -132,6 +132,9 @@ router.get("/", async (req, res) => {
       const totalCount = projectSteps.length;
       const progress = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
       const nextStep = projectSteps.find((step) => !step.done) ?? null;
+      const schedulableSteps = projectSteps
+        .filter((step) => !step.done)
+        .map((step) => ({ id: step.id, title: step.title, estimatedMinutes: step.estimated_minutes }));
 
       return {
         id: project.id,
@@ -151,6 +154,7 @@ router.get("/", async (req, res) => {
               estimatedMinutes: nextStep.estimated_minutes,
             }
           : null,
+        schedulableSteps,
       };
     }),
   });

@@ -14,6 +14,7 @@ import {
   type CalendarAssignment,
   type DueProject,
 } from "../services/calendar";
+import LoadingState from "../components/LoadingState";
 
 type ViewMode = "week" | "month";
 
@@ -184,7 +185,7 @@ export default function CalendarPage() {
       </div>
 
       {loading ? (
-        <p className="text-center text-mu text-sm mt-6">불러오는 중...</p>
+        <LoadingState title="일정을 불러오고 있어요" className="max-w-[520px]" />
       ) : error ? (
         <p className="text-center text-red-400 text-sm mt-6">{error}</p>
       ) : (

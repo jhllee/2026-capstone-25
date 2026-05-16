@@ -309,12 +309,14 @@
 | **PR 브랜치** | `feat/mobile-polish` |
 
 **산출물**:
-- [ ] 전 화면 모바일 폭 audit (Home · Result · All · Detail · Timer · Calendar · Report · Me · Login)
-- [ ] 빈 상태 컴포넌트 통일 (`components/EmptyState.tsx`) — 이모지 + 타이틀 + 안내
-- [ ] 에러 바운더리 (`components/ErrorBoundary.tsx`) — 라우트 단위
-- [ ] `services/*.ts` 공통 에러 변환 — fetch 실패/422/401 분기
-- [ ] Toast(또는 banner) — 에러/성공 알림 통일
-- [ ] 로딩 스피너 통일 (INTAKE→DECOMPOSE→VALIDATE→PRESENT 4단 progress §3.2 마무리)
+- [x] 전 화면 모바일 폭 audit (Home · Result · All · Detail · Timer · Calendar · Report · Me · Login)
+- [x] 빈 상태 컴포넌트 통일 (`components/EmptyState.tsx`) — 이모지 + 타이틀 + 안내
+- [x] 에러 바운더리 (`components/ErrorBoundary.tsx`) — 라우트 단위
+- [x] `services/*.ts` 공통 에러 변환 — fetch 실패/422/401 분기
+- [x] `lib/api.ts` — `apiFetch`/`checkResponse` 공통 헬퍼로 네트워크 실패·401·422 메시지 통일
+- [x] Toast(또는 banner) — 에러/성공 알림 통일
+- [x] 로딩 스피너 통일
+- [x] `components/LoadingState.tsx` — 일반 로딩 상태 공통 컴포넌트
 
 ### J12. 배포 — **지희**
 

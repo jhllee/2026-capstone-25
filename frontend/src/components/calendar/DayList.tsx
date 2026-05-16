@@ -3,6 +3,7 @@
 // onDelete: 삭제 후 부모(CalendarPage)가 낙관적 UI 갱신.
 // onPriorityChange: ▲/▼ 클릭 시 인접 항목과 priority를 교환한다.
 import { X } from "lucide-react";
+import EmptyState from "../EmptyState";
 import { deleteAssignment, patchAssignment, type CalendarAssignment } from "../../services/calendar";
 
 type Props = {
@@ -38,10 +39,7 @@ export default function DayList({ assignments, onDelete, onPriorityChange }: Pro
   return (
     <div className="flex-1">
       {sorted.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-2">
-          <span className="text-3xl">📭</span>
-          <p className="text-sm text-mu">배정된 단계가 없어요</p>
-        </div>
+        <EmptyState emoji="📭" title="배정된 단계가 없어요" />
       ) : (
         <ul className="flex flex-col gap-2">
           {sorted.map((a, i) => (

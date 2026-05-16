@@ -1,6 +1,8 @@
 import { BrowserRouter, Outlet, Routes, Route } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import SessionGuard from "./components/SessionGuard";
+import { ToastProvider } from "./lib/toast";
+import ErrorBoundary from "./components/ErrorBoundary";
 import HomePage from "./pages/HomePage";
 import AllPage from "./pages/AllPage";
 import LoginPage from "./pages/LoginPage";
@@ -13,6 +15,7 @@ import ReportPage from "./pages/ReportPage";
 
 export default function App() {
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -27,15 +30,16 @@ export default function App() {
             </SessionGuard>
           }
         >
-          <Route path="/" element={<HomePage />} />
-          <Route path="/result" element={<ResultPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/all" element={<AllPage />} />
-          <Route path="/all/:id" element={<ProjectDetailPage />} />
-          <Route path="/report" element={<ReportPage />} />
-          <Route path="/me" element={<MePage />} />
+          <Route path="/" element={<ErrorBoundary><HomePage /></ErrorBoundary>} />
+          <Route path="/result" element={<ErrorBoundary><ResultPage /></ErrorBoundary>} />
+          <Route path="/calendar" element={<ErrorBoundary><CalendarPage /></ErrorBoundary>} />
+          <Route path="/all" element={<ErrorBoundary><AllPage /></ErrorBoundary>} />
+          <Route path="/all/:id" element={<ErrorBoundary><ProjectDetailPage /></ErrorBoundary>} />
+          <Route path="/report" element={<ErrorBoundary><ReportPage /></ErrorBoundary>} />
+          <Route path="/me" element={<ErrorBoundary><MePage /></ErrorBoundary>} />
         </Route>
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   );
 }

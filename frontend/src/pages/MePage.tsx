@@ -6,6 +6,7 @@ import { getMeStats, getUserInfo, type MeStats } from "../services/me";
 import { listProjects, type ProjectSummary } from "../services/projects";
 import StatsCard from "../components/me/StatsCard";
 import CompletedProjectList from "../components/me/CompletedProjectList";
+import LoadingState from "../components/LoadingState";
 
 export default function MePage() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function MePage() {
       </div>
 
       {loading ? (
-        <p className="text-center py-16 text-sm text-mu">불러오는 중...</p>
+        <LoadingState title="내 정보를 불러오고 있어요" className="max-w-[520px]" />
       ) : (
         <>
           {/* 통계 카드 */}

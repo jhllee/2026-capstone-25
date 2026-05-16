@@ -1,9 +1,10 @@
 // 캘린더 탭 날짜 배정 바텀 시트.
-// 선택 날짜에 배정할 단계를 고른다 — 프로젝트별로 nextStep만 표시.
+// 프로젝트별로 모든 미완료 단계를 펼쳐서 선택.
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { listProjects, type ProjectSummary } from "../../services/projects";
 import { createAssignment, type CalendarAssignment } from "../../services/calendar";
+import LoadingState from "../LoadingState";
 
 type Props = {
   date: string;
@@ -12,6 +13,17 @@ type Props = {
   onClose: () => void;
   onAssigned: () => void;
 };
+
+function dDayLabel(due: string): { text: string; color: string } | null {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(due + "T00:00:00");
+  const diff = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
+  if (diff < 0) return { text: `D+${Math.abs(diff)}`, color: "#E74C3C" };
+  if (diff === 0) return { text: "D-Day", color: "#E74C3C" };
+  if (diff <= 3) return { text: `D-${diff}`, color: "#E67E22" };
+  return { text: `D-${diff}`, color: "#22A560" };
+}
 
 export default function SchedulePicker({ date, dateLabel, existingAssignments, onClose, onAssigned }: Props) {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
@@ -30,8 +42,7 @@ export default function SchedulePicker({ date, dateLabel, existingAssignments, o
     existingAssignments.filter((a) => a.date === date).map((a) => a.step.id),
   );
 
-  // 미완료 + nextStep 있는 것만
-  const schedulable = projects.filter((p) => p.progress < 100 && p.nextStep);
+  const schedulable = projects.filter((p) => p.schedulableSteps.length > 0);
 
   function toggle(stepId: string) {
     setSelected((prev) => {
@@ -72,63 +83,99 @@ export default function SchedulePicker({ date, dateLabel, existingAssignments, o
         {/* 리스트 */}
         <div className="overflow-y-auto flex-1 -mx-1 px-1">
           {loading ? (
-            <p className="text-center py-10 text-sm text-mu">불러오는 중...</p>
+            <LoadingState title="할 일을 불러오고 있어요" className="max-w-[360px]" />
           ) : schedulable.length === 0 ? (
             <p className="text-center py-10 text-sm text-mu">진행 중인 할 일이 없어요</p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3.5">
               {schedulable.map((p) => {
-                const stepId = p.nextStep!.id;
-                const already = assignedOnDate.has(stepId);
-                const sel = selected.has(stepId);
                 const color = p.color ?? "var(--color-ac)";
+                const dd = p.due ? dDayLabel(p.due) : null;
 
                 return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    disabled={already}
-                    onClick={() => !already && toggle(stepId)}
-                    className={[
-                      "w-full flex items-center gap-3 px-3 py-3 rounded-xl border-[1.5px] text-left transition-all",
-                      already
-                        ? "opacity-50 border-bd2 bg-fa"
-                        : sel
-                        ? "border-ac bg-ac-s"
-                        : "border-bd2 bg-sf hover:border-bd",
-                    ].join(" ")}
-                  >
-                    {/* 체크 */}
-                    <span
-                      className={[
-                        "w-[18px] h-[18px] rounded-[5px] border-2 flex items-center justify-center shrink-0 transition-all",
-                        sel ? "border-ac bg-ac" : "border-bd bg-sf",
-                      ].join(" ")}
-                    >
-                      {sel && (
-                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                          <path d="M2.5 6.2l2.3 2.3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
+                  <div key={p.id}>
+                    {/* 프로젝트 헤더 (isSingle이면 숨김) */}
+                    {!p.isSingle && (
+                      <div className="flex items-center gap-2 mb-2 px-1">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}22` }}
+                        />
+                        <span className="flex-1 min-w-0 text-[12.5px] font-black text-tx truncate">
+                          {p.title}
+                        </span>
+                        {dd && (
+                          <span
+                            className="text-[11px] font-black shrink-0"
+                            style={{ color: dd.color }}
+                          >
+                            {dd.text}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
-                    {/* 색상 점 */}
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}25` }}
-                    />
+                    {/* 하위 항목들 */}
+                    <div className={p.isSingle ? "" : "pl-1 space-y-1.5"}>
+                      {p.schedulableSteps.map((step) => {
+                        const already = assignedOnDate.has(step.id);
+                        const sel = selected.has(step.id);
 
-                    {/* 텍스트 */}
-                    <div className="min-w-0 flex-1">
-                      {!p.isSingle && (
-                        <p className="text-[11px] font-bold text-mu truncate">{p.title}</p>
-                      )}
-                      <p className="text-sm font-bold text-tx truncate">
-                        {p.nextStep!.title}
-                        {already && <span className="ml-1.5 text-[10px] text-mu2 font-semibold">(이미 추가됨)</span>}
-                      </p>
+                        return (
+                          <button
+                            key={step.id}
+                            type="button"
+                            disabled={already}
+                            onClick={() => !already && toggle(step.id)}
+                            className={[
+                              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-[1.5px] text-left transition-all",
+                              already
+                                ? "opacity-50 border-bd2 bg-fa cursor-not-allowed"
+                                : sel
+                                ? "border-ac bg-ac-s"
+                                : "border-bd2 bg-sf hover:border-bd",
+                            ].join(" ")}
+                          >
+                            {/* 체크 */}
+                            <span
+                              className={[
+                                "w-4 h-4 rounded-[4px] border-2 flex items-center justify-center shrink-0 transition-all",
+                                sel ? "border-ac bg-ac" : "border-bd bg-sf",
+                              ].join(" ")}
+                            >
+                              {sel && (
+                                <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                                  <path d="M2.5 6.2l2.3 2.3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              )}
+                            </span>
+
+                            {/* isSingle일 때만 색상 점 */}
+                            {p.isSingle && (
+                              <span
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}22` }}
+                              />
+                            )}
+
+                            <span className="flex-1 min-w-0 text-[12.5px] font-semibold text-tx truncate">
+                              {step.title}
+                              {already && (
+                                <span className="ml-1.5 text-[10px] text-mu2 font-semibold">(이미 추가됨)</span>
+                              )}
+                            </span>
+
+                            {/* isSingle + due인 경우 D-Day 표시 */}
+                            {p.isSingle && dd && (
+                              <span className="text-[11px] font-black shrink-0" style={{ color: dd.color }}>
+                                {dd.text}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
