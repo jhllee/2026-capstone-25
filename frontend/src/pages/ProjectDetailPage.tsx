@@ -19,6 +19,8 @@ import {
   type StepDetail,
 } from "../services/projects";
 import { decomposeSub } from "../services/decompose";
+import { useToast } from "../lib/toast";
+import LoadingState from "../components/LoadingState";
 
 // YYYY-MM-DD → D-day 문자열 계산
 function getDdayText(due: string | null): string {
@@ -46,6 +48,7 @@ function calcProgress(steps: StepDetail[]) {
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState("");
@@ -105,9 +108,9 @@ export default function ProjectDetailPage() {
       if (parentSyncId) {
         await toggleStep(parentSyncId, parentSyncDone);
       }
-    } catch {
-      // 실패 시 롤백
+    } catch (e) {
       setProject({ ...project, steps: prevSteps });
+      showToast(e instanceof Error ? e.message : "완료 상태 변경에 실패했어요.");
     }
   }
 
@@ -138,7 +141,7 @@ export default function ProjectDetailPage() {
       const updated = await getProject(id);
       setProject(updated);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "하위 단계로 쪼개기에 실패했어요.");
+      showToast(err instanceof Error ? err.message : "하위 단계로 쪼개기에 실패했어요.");
     } finally {
       setBusySubParentId(null);
     }
@@ -188,14 +191,14 @@ export default function ProjectDetailPage() {
   async function handleEditSave() {
     if (!project || !id) return;
     if (!editableTitle.trim()) {
-      alert("프로젝트 제목을 입력해 주세요.");
+      showToast("프로젝트 제목을 입력해 주세요.");
       return;
     }
     const emptyTitle = editableSteps.some(
       (s) => !s.title.trim() || (s.children ?? []).some((c) => !c.title.trim()),
     );
     if (emptyTitle) {
-      alert("단계 제목을 모두 입력해 주세요.");
+      showToast("단계 제목을 모두 입력해 주세요.");
       return;
     }
     setIsSaving(true);
@@ -220,10 +223,55 @@ export default function ProjectDetailPage() {
       setEditableStartDate("");
       setEditableDue("");
     } catch {
-      alert("저장하지 못했어요. 다시 시도해 주세요.");
+      showToast("저장하지 못했어요. 다시 시도해 주세요.");
     } finally {
       setIsSaving(false);
     }
+  }
+
+  // 버전 기록 토글 — 처음 열 때만 API 조회
+  async function handleToggleHistory() {
+    if (!id) return;
+    if (!showHistory && rounds.length === 0) {
+      setIsLoadingRounds(true);
+      try {
+        const data = await listRounds(id);
+        setRounds(data);
+      } catch {
+        showToast("버전 목록을 불러오지 못했어요.");
+        return;
+      } finally {
+        setIsLoadingRounds(false);
+      }
+    }
+    setShowHistory((prev) => !prev);
+  }
+
+  // 특정 버전 복원 — 성공 시 프로젝트 재조회
+  async function handleRestore(round: number) {
+    if (!id) return;
+    const ok = window.confirm(`버전 ${round}로 복원할까요? 현재 단계 목록은 새 버전으로 대체됩니다.`);
+    if (!ok) return;
+    setIsRestoring(true);
+    try {
+      await restoreRound(id, round);
+      const updated = await getProject(id);
+      setProject(updated);
+      setShowHistory(false);
+      setRounds([]);
+    } catch {
+      showToast("복원하지 못했어요. 다시 시도해 주세요.");
+    } finally {
+      setIsRestoring(false);
+    }
+  }
+
+  // trigger 한국어 변환
+  function triggerLabel(trigger: string): string {
+    if (trigger === "initial") return "최초 생성";
+    if (trigger === "edit") return "직접 편집";
+    if (trigger === "restore") return "버전 복원";
+    return trigger;
   }
 
   async function handleDelete() {
@@ -235,11 +283,7 @@ export default function ProjectDetailPage() {
   }
 
   if (status === "loading") {
-    return (
-      <div className="px-4 py-16 text-center text-sm font-bold text-mu">
-        불러오는 중이에요
-      </div>
-    );
+    return <LoadingState title="프로젝트를 불러오고 있어요" className="max-w-[720px]" />;
   }
 
   if (status === "error" || !project) {

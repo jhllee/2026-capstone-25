@@ -91,6 +91,14 @@
   input[type="date"]:not(:disabled) { cursor: pointer; }
 }
 
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.2s ease-out;
+}
+
 /* 본문 — 프로토타입 body 와 동일 */
 html,
 body {

@@ -11,9 +11,11 @@ import MonthGrid from "../components/calendar/MonthGrid";
 import SchedulePicker from "../components/calendar/SchedulePicker";
 import {
   listAssignments,
+  deleteAssignment,
   type CalendarAssignment,
   type DueProject,
 } from "../services/calendar";
+import LoadingState from "../components/LoadingState";
 
 type ViewMode = "week" | "month";
 
@@ -70,6 +72,8 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   function loadAssignments() {
     const range =
@@ -97,9 +101,35 @@ export default function CalendarPage() {
     setAssignments((prev) => prev.filter((a) => a.id !== id));
   }
 
+  function toggleSelectionMode() {
+    setSelectionMode((prev) => !prev);
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function deleteSelected() {
+    const ids = [...selectedIds];
+    ids.forEach((id) => handleDelete(id));
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    await Promise.all(ids.map((id) => deleteAssignment(id))).catch(() => {});
+  }
+
   function handlePriorityChange(id: string, priority: number) {
+    setAssignments((prev) => prev.map((a) => (a.id === id ? { ...a, priority } : a)));
+  }
+
+  function handleToggleDone(stepId: string, done: boolean) {
     setAssignments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, priority } : a)),
+      prev.map((a) => a.step.id === stepId ? { ...a, step: { ...a.step, done } } : a),
     );
   }
 
@@ -142,11 +172,10 @@ export default function CalendarPage() {
     : `${selDateObj.getMonth() + 1}월 ${selDateObj.getDate()}일 ${DAY_NAMES[selDateObj.getDay()]}요일`;
 
   return (
-    <div className="flex flex-col min-h-full px-[18px] pt-6 pb-6 gap-4">
+    <div className="flex flex-col min-h-full px-[18px] pt-6 pb-24 gap-4 relative">
 
       {/* ── 헤더: 타이틀 + 오늘 버튼 + 토글 ── */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[22px] font-bold text-tx tracking-[-0.3px]">일정</span>
         <div className="flex items-center gap-2">
           {/* 오늘 날짜 숫자 버튼 */}
           <button
@@ -184,7 +213,7 @@ export default function CalendarPage() {
       </div>
 
       {loading ? (
-        <p className="text-center text-mu text-sm mt-6">불러오는 중...</p>
+        <LoadingState title="일정을 불러오고 있어요" className="max-w-[520px]" />
       ) : error ? (
         <p className="text-center text-red-400 text-sm mt-6">{error}</p>
       ) : (
@@ -266,20 +295,39 @@ export default function CalendarPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-bold text-mu tracking-[0.5px]">{selLabel}</p>
-              <button
-                type="button"
-                onClick={() => setShowPicker(true)}
-                className="flex items-center gap-1 text-xs font-black text-ac hover:opacity-75 transition-opacity"
-              >
-                <span className="text-base leading-none">＋</span> 할 일 추가
-              </button>
+              {assignments.filter((a) => a.date === selectedDate).length > 0 && (
+                <button
+                  type="button"
+                  onClick={toggleSelectionMode}
+                  className="text-xs font-black text-mu hover:text-tx transition-colors"
+                >
+                  {selectionMode ? "취소" : "선택"}
+                </button>
+              )}
             </div>
             <DayList
               assignments={assignments.filter((a) => a.date === selectedDate)}
-              onDelete={handleDelete}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onToggleDone={handleToggleDone}
               onPriorityChange={handlePriorityChange}
             />
           </div>
+
+          {/* 선택 모드 하단 삭제 바 */}
+          {selectionMode && (
+            <div className="fixed bottom-0 left-0 right-0 lg:left-[248px] z-20 border-t border-bd2 bg-sf px-[18px] pt-3 pb-[max(20px,calc(env(safe-area-inset-bottom)+12px))]">
+              <button
+                type="button"
+                onClick={() => void deleteSelected()}
+                disabled={selectedIds.size === 0}
+                className="w-full rounded-xl bg-fa border border-bd py-3 text-sm font-black text-mu disabled:opacity-40 transition-opacity hover:bg-bd2"
+              >
+                {selectedIds.size > 0 ? `${selectedIds.size}개 배정 취소` : "항목을 선택하세요"}
+              </button>
+            </div>
+          )}
 
           {showPicker && (
             <SchedulePicker
@@ -291,6 +339,17 @@ export default function CalendarPage() {
             />
           )}
         </>
+      )}
+      {/* FAB — 할 일 추가 */}
+      {!selectionMode && (
+        <button
+          type="button"
+          onClick={() => setShowPicker(true)}
+          className="fixed bottom-[calc(80px+env(safe-area-inset-bottom)+8px)] right-[18px] lg:right-[max(18px,calc((100vw-1148px)/2+18px))] w-14 h-14 rounded-full bg-ac text-white text-2xl font-black shadow-[0_4px_16px_rgba(0,0,0,0.18)] flex items-center justify-center z-40 hover:opacity-90 transition-opacity cursor-pointer"
+          aria-label="할 일 추가"
+        >
+          ＋
+        </button>
       )}
     </div>
   );

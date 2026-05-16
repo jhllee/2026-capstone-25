@@ -44,7 +44,7 @@ export default function ResultBlock({
           </div>
         )}
       </div>
-      <div className="text-[21px] font-extrabold text-tx leading-[1.3] mb-[14px]">
+      <div className="text-[21px] font-extrabold text-tx leading-[1.3] mb-[14px] break-keep">
         {projectTitle}
       </div>
 
