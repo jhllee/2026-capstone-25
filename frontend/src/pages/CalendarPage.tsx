@@ -346,7 +346,7 @@ export default function CalendarPage() {
         <button
           type="button"
           onClick={() => setShowPicker(true)}
-          className="fixed bottom-[88px] right-5 w-14 h-14 rounded-full bg-ac text-white text-2xl font-black shadow-[0_4px_16px_rgba(0,0,0,0.18)] flex items-center justify-center z-40 hover:opacity-90 transition-opacity cursor-pointer"
+          className="fixed bottom-[64px] right-[18px] lg:right-[max(18px,calc((100vw-1148px)/2+18px))] w-14 h-14 rounded-full bg-ac text-white text-2xl font-black shadow-[0_4px_16px_rgba(0,0,0,0.18)] flex items-center justify-center z-40 hover:opacity-90 transition-opacity cursor-pointer"
           aria-label="할 일 추가"
         >
           ＋
