@@ -21,6 +21,7 @@ import ReasoningBlock from "../components/result/ReasoningBlock";
 import RefineBlock, { type HistoryPreview } from "../components/result/RefineBlock";
 import ConfirmBlock from "../components/result/ConfirmBlock";
 import StepEditor, { type EditableStep } from "../components/edit/StepEditor";
+import LoadingState, { DECOMPOSE_PIPELINE } from "../components/LoadingState";
 
 // 결과 화면 진입 시 location.state 로 전달되는 입력. HomePage 의 navigate 와 모양을 맞춘다.
 // files 는 첫 마운트 1회에 한해 사용 — 업로드 완료 후 input.attachments 로 옮기고 메모리에서 폐기.
@@ -608,17 +609,27 @@ function BusyBar({ text = "다시 분해하는 중…" }: { text?: string }) {
 }
 
 function LoadingView({ uploading = false }: { uploading?: boolean }) {
+  const [step, setStep] = useState(uploading ? 0 : 1);
+
+  useEffect(() => {
+    setStep(uploading ? 0 : 1);
+    if (uploading) return;
+
+    const timer = window.setInterval(() => {
+      setStep((current) => Math.min(current + 1, DECOMPOSE_PIPELINE.length - 1));
+    }, 900);
+
+    return () => window.clearInterval(timer);
+  }, [uploading]);
+
   return (
-    <div className="px-4 lg:px-8 py-10 max-w-[520px] mx-auto w-full flex flex-col items-center text-center">
-      <div className="relative w-16 h-16 mb-6">
-        <span className="absolute inset-0 rounded-full border-4 border-ac-s2" />
-        <span className="absolute inset-0 rounded-full border-4 border-transparent border-t-ac animate-spin" />
-      </div>
-      <div className="text-lg font-bold text-tx mb-2">
-        {uploading ? "첨부 파일을 올리는 중이에요" : "할 일을 단계로 쪼개고 있어요"}
-      </div>
-      <div className="text-sm text-mu mb-6">잠시만 기다려 주세요…</div>
-    </div>
+    <LoadingState
+      title={uploading ? "첨부 파일을 읽고 있어요" : "할 일을 단계로 쪼개고 있어요"}
+      subtitle="잠시만 기다려 주세요"
+      pipeline={DECOMPOSE_PIPELINE}
+      activeStep={step}
+      className="max-w-[520px]"
+    />
   );
 }
 

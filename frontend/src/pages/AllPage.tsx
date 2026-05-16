@@ -3,6 +3,7 @@ import ProjectCard from "../components/all/ProjectCard";
 import SingleCard from "../components/all/SingleCard";
 import { deleteProject, listProjects, toggleStep, type ProjectSummary } from "../services/projects";
 import EmptyState from "../components/EmptyState";
+import LoadingState from "../components/LoadingState";
 
 // 전체 탭 목록 모드.
 // DB 프로젝트를 마감일별로 묶고, 빈 상태/로딩/에러 상태를 함께 관리한다.
@@ -104,9 +105,7 @@ export default function AllPage() {
 
   if (status === "loading") {
     return (
-      <div className="px-4 lg:px-8 py-16 max-w-[720px] mx-auto w-full text-center">
-        <div className="text-sm font-bold text-mu">프로젝트를 불러오고 있어요</div>
-      </div>
+      <LoadingState title="프로젝트를 불러오고 있어요" className="max-w-[720px]" />
     );
   }
 

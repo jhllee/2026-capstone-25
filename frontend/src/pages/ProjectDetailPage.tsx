@@ -24,6 +24,7 @@ import {
 } from "../services/projects";
 import { decomposeSub } from "../services/decompose";
 import { useToast } from "../lib/toast";
+import LoadingState from "../components/LoadingState";
 
 // YYYY-MM-DD → D-day 문자열 계산
 function getDdayText(due: string | null): string {
@@ -320,11 +321,7 @@ export default function ProjectDetailPage() {
   }
 
   if (status === "loading") {
-    return (
-      <div className="px-4 py-16 text-center text-sm font-bold text-mu">
-        불러오는 중이에요
-      </div>
-    );
+    return <LoadingState title="프로젝트를 불러오고 있어요" className="max-w-[720px]" />;
   }
 
   if (status === "error" || !project) {

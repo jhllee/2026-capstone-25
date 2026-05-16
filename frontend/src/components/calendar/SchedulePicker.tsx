@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { listProjects, type ProjectSummary } from "../../services/projects";
 import { createAssignment, type CalendarAssignment } from "../../services/calendar";
+import LoadingState from "../LoadingState";
 
 type Props = {
   date: string;
@@ -72,7 +73,7 @@ export default function SchedulePicker({ date, dateLabel, existingAssignments, o
         {/* 리스트 */}
         <div className="overflow-y-auto flex-1 -mx-1 px-1">
           {loading ? (
-            <p className="text-center py-10 text-sm text-mu">불러오는 중...</p>
+            <LoadingState title="할 일을 불러오고 있어요" className="max-w-[360px]" />
           ) : schedulable.length === 0 ? (
             <p className="text-center py-10 text-sm text-mu">진행 중인 할 일이 없어요</p>
           ) : (

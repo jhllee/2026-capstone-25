@@ -7,6 +7,7 @@ import ProjectBreakdown from "../components/report/ProjectBreakdown";
 import UserTypeCard from "../components/report/UserTypeCard";
 import PatternCards from "../components/report/PatternCards";
 import NextWeekSuggestion from "../components/report/NextWeekSuggestion";
+import LoadingState from "../components/LoadingState";
 
 function getWeekKey(): string {
   const d = new Date();
@@ -86,7 +87,7 @@ export default function ReportPage() {
       <span className="text-[22px] font-bold text-tx tracking-[-0.3px]">리포트</span>
 
       {status === "loading" && (
-        <p className="text-center text-mu text-sm mt-6">불러오는 중...</p>
+        <LoadingState title="리포트를 불러오고 있어요" className="max-w-[520px]" />
       )}
       {status === "error" && (
         <p className="text-center text-red-400 text-sm mt-6">리포트를 불러오지 못했어요.</p>

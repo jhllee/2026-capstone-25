@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import LoadingState from "./LoadingState";
 
 type Props = {
   children: ReactNode;
@@ -32,7 +33,7 @@ export default function SessionGuard({ children }: Props) {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-bg text-tx flex items-center justify-center">
-        <div className="text-sm font-bold text-mu">세션을 확인하고 있어요</div>
+        <LoadingState title="세션을 확인하고 있어요" className="max-w-[360px]" />
       </div>
     );
   }
