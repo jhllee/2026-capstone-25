@@ -315,8 +315,8 @@
 - [x] `services/*.ts` 공통 에러 변환 — fetch 실패/422/401 분기
 - [x] `lib/api.ts` — `apiFetch`/`checkResponse` 공통 헬퍼로 네트워크 실패·401·422 메시지 통일
 - [x] Toast(또는 banner) — 에러/성공 알림 통일
-- [x] 로딩 스피너 통일 (INTAKE→DECOMPOSE→VALIDATE→PRESENT 4단 progress §3.2 마무리)
-- [x] `components/LoadingState.tsx` — 일반 로딩 상태 + 분해 4단 progress 공통 컴포넌트
+- [x] 로딩 스피너 통일
+- [x] `components/LoadingState.tsx` — 일반 로딩 상태 공통 컴포넌트
 
 ### J12. 배포 — **지희**
 
