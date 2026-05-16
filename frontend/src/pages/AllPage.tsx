@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import ProjectCard from "../components/all/ProjectCard";
 import SingleCard from "../components/all/SingleCard";
-import { deleteProject, listProjects, type ProjectSummary } from "../services/projects";
+import { deleteProject, listProjects, toggleStep, type ProjectSummary } from "../services/projects";
 
 // 전체 탭 목록 모드.
 // DB 프로젝트를 마감일별로 묶고, 빈 상태/로딩/에러 상태를 함께 관리한다.
@@ -15,7 +15,7 @@ type ProjectGroup = {
 
 function getDday(due: string | null) {
   // 마감일 없으면 은은한 뱃지로 표시
-  if (!due) return { label: "마감 X", dday: "마감 X", urgencyClass: "bg-fa text-mu" };
+  if (!due) return { label: "마감 없음", dday: "마감 없음", urgencyClass: "bg-fa text-mu" };
 
   const today = new Date();
   const dueDate = new Date(`${due}T00:00:00`);
@@ -25,9 +25,9 @@ function getDday(due: string | null) {
   const dday = diff === 0 ? "D-Day" : diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`;
   // 초과·당일: 부드러운 레드 / 7일 이내: 앱 오렌지 계열 / 그 외: 크림 뱃지
   const urgencyClass =
-    diff <= 0 ? "bg-red-50 text-red-500 border border-red-200"
-    : diff <= 7 ? "bg-ac-s text-ac-d border border-ac-s2"
-    : "bg-fa text-mu border border-bd";
+    diff <= 0 ? "bg-red-300 text-red-900"
+    : diff <= 7 ? "bg-orange-200 text-orange-900"
+    : "bg-fa text-tx2 border border-bd";
 
   return { label: due, dday, urgencyClass };
 }
@@ -37,6 +37,8 @@ function groupProjects(projects: ProjectSummary[]) {
     const ad = a.due ?? "9999-12-31";
     const bd = b.due ?? "9999-12-31";
     if (ad !== bd) return ad < bd ? -1 : 1;
+    // 같은 마감일 내에서 단일 작업은 뒤로
+    if (a.isSingle !== b.isSingle) return a.isSingle ? 1 : -1;
     return b.createdAt.localeCompare(a.createdAt);
   });
 
@@ -85,6 +87,12 @@ export default function AllPage() {
   const ongoing = projects.filter((project) => project.progress < 100).length;
   const completed = projects.length - ongoing;
 
+  async function handleToggle(stepId: string, done: boolean) {
+    await toggleStep(stepId, done);
+    // 완료 상태 변경 → 진행률 갱신을 위해 목록 다시 조회
+    void loadProjects();
+  }
+
   async function handleDelete(id: string) {
     const ok = window.confirm("이 프로젝트를 삭제할까요?");
     if (!ok) return;
@@ -128,9 +136,9 @@ export default function AllPage() {
   }
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-[960px] 2xl:max-w-[1200px] mx-auto w-full">
+    <div className="px-[18px] py-6">
       <div className="mb-6">
-        <h1 className="text-xl font-black text-tx mb-2">나의 할 일</h1>
+        <h1 className="text-[22px] font-bold text-tx tracking-[-0.3px] mb-2">나의 할 일</h1>
         <div className="flex gap-4 text-xs text-mu">
           <span>
             진행중 <span className="font-black text-tx2">{ongoing}</span>
@@ -148,12 +156,14 @@ export default function AllPage() {
               <span className={["rounded-full px-2.5 py-1 text-[11px] font-black", group.urgencyClass].join(" ")}>
                 {group.dday}
               </span>
-              <span className="text-xs font-bold text-mu">{group.label}</span>
+              {group.key !== "no-due" && (
+                <span className="text-xs font-bold text-mu">{group.label}</span>
+              )}
             </div>
-            <div className="grid gap-3 xl:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid gap-3 xl:grid-cols-2 2xl:grid-cols-3 items-start">
               {group.projects.map((project) =>
                 project.isSingle ? (
-                  <SingleCard key={project.id} project={project} onDelete={handleDelete} />
+                  <SingleCard key={project.id} project={project} onDelete={handleDelete} onToggle={handleToggle} />
                 ) : (
                   <ProjectCard key={project.id} project={project} onDelete={handleDelete} />
                 ),

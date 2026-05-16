@@ -162,7 +162,7 @@ router.get("/:id", async (req, res) => {
 
   const { data: project, error: projectError } = await supabase
     .from("projects")
-    .select("id, title, memo, goal, color, due, is_single, created_at")
+    .select("id, title, memo, goal, color, start_date, due, is_single, created_at")
     .eq("id", id)
     .eq("user_id", req.userId)
     .single();
@@ -212,6 +212,7 @@ router.get("/:id", async (req, res) => {
     title: project.title ?? project.goal,
     memo: project.memo,
     color: project.color,
+    startDate: project.start_date ?? null,
     due: project.due,
     isSingle: project.is_single,
     createdAt: project.created_at,
@@ -377,6 +378,14 @@ router.patch("/:id/steps", async (req, res) => {
   if (projectError || !project) {
     res.status(404).json({ error: "프로젝트를 찾을 수 없어요." });
     return;
+  }
+
+  const projectUpdate: Record<string, unknown> = {};
+  if (parsed.data.title) projectUpdate.title = parsed.data.title;
+  if ("startDate" in parsed.data) projectUpdate.start_date = parsed.data.startDate ?? null;
+  if ("due" in parsed.data) projectUpdate.due = parsed.data.due ?? null;
+  if (Object.keys(projectUpdate).length > 0) {
+    await supabase.from("projects").update(projectUpdate).eq("id", id).eq("user_id", req.userId);
   }
 
   const { data: latestDecomps } = await supabase

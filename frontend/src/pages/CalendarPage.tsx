@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import WeekStrip from "../components/calendar/WeekStrip";
 import DayList from "../components/calendar/DayList";
 import MonthGrid from "../components/calendar/MonthGrid";
+import SchedulePicker from "../components/calendar/SchedulePicker";
 import {
   listAssignments,
   type CalendarAssignment,
@@ -68,8 +69,9 @@ export default function CalendarPage() {
   const [dueProjects, setDueProjects] = useState<DueProject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
-  useEffect(() => {
+  function loadAssignments() {
     const range =
       view === "week"
         ? getWeekRange(selectedDate)
@@ -85,6 +87,10 @@ export default function CalendarPage() {
       })
       .catch(() => setError("일정을 불러오지 못했어요."))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadAssignments();
   }, [view, selectedDate, monthYear]);
 
   function handleDelete(id: string) {
@@ -136,7 +142,7 @@ export default function CalendarPage() {
     : `${selDateObj.getMonth() + 1}월 ${selDateObj.getDate()}일 ${DAY_NAMES[selDateObj.getDay()]}요일`;
 
   return (
-    <div className="flex flex-col min-h-full bg-bg px-[22px] pt-6 pb-6 gap-4">
+    <div className="flex flex-col min-h-full px-[18px] pt-6 pb-6 gap-4">
 
       {/* ── 헤더: 타이틀 + 오늘 버튼 + 토글 ── */}
       <div className="flex items-center justify-between gap-2">
@@ -200,7 +206,11 @@ export default function CalendarPage() {
                 >
                   <ChevronLeft size={18} />
                 </button>
-                <WeekStrip selectedDate={selectedDate} onSelect={setSelectedDate} />
+                <WeekStrip
+                  selectedDate={selectedDate}
+                  onSelect={setSelectedDate}
+                  assignedDates={new Set(assignments.map((a) => a.date))}
+                />
                 <button
                   type="button"
                   onClick={nextWeek}
@@ -254,13 +264,32 @@ export default function CalendarPage() {
 
           {/* ── DayList: 항상 표시 ── */}
           <div>
-            <p className="text-[11px] font-bold text-mu tracking-[0.5px] mb-3">{selLabel}</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-bold text-mu tracking-[0.5px]">{selLabel}</p>
+              <button
+                type="button"
+                onClick={() => setShowPicker(true)}
+                className="flex items-center gap-1 text-xs font-black text-ac hover:opacity-75 transition-opacity"
+              >
+                <span className="text-base leading-none">＋</span> 할 일 추가
+              </button>
+            </div>
             <DayList
               assignments={assignments.filter((a) => a.date === selectedDate)}
               onDelete={handleDelete}
               onPriorityChange={handlePriorityChange}
             />
           </div>
+
+          {showPicker && (
+            <SchedulePicker
+              date={selectedDate}
+              dateLabel={selLabel}
+              existingAssignments={assignments}
+              onClose={() => setShowPicker(false)}
+              onAssigned={loadAssignments}
+            />
+          )}
         </>
       )}
     </div>

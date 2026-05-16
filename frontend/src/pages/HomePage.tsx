@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { DecomposeRequest } from "../schemas/decompose";
-import { addTask } from "../services/tasks";
+import { createProject } from "../services/projects";
 
 const ACCEPTED_FILE_EXT = [
   ".pdf",
@@ -74,17 +74,23 @@ export default function HomePage() {
     setFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  function onSubmit(values: FormValues) {
+  async function onSubmit(values: FormValues) {
     // AI 쪼개기 OFF — 단일 할 일로 저장 후 전체 목록으로 이동
     if (!values.wantSplit) {
-      addTask({
-        title: values.title,
-        description: values.description,
-        startDate: values.startDate,
-        dueDate: values.dueDate,
-        isSingle: true,
-      });
-      navigate("/all");
+      try {
+        await createProject({
+          title: values.title,
+          goal: values.title,
+          memo: values.description?.trim() || undefined,
+          startDate: values.startDate || undefined,
+          due: values.dueDate || undefined,
+          isSingle: true,
+          steps: [],
+        });
+        navigate("/all");
+      } catch {
+        alert("할 일 추가에 실패했어요. 다시 시도해주세요.");
+      }
       return;
     }
 
@@ -100,7 +106,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-[720px] mx-auto w-full">
+    <div className="px-[18px] py-6">
       <div className="text-[15px] font-bold text-tx mb-[14px] pl-[7px]">
         할 일을 작게 만들어볼까요?
       </div>

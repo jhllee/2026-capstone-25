@@ -257,9 +257,9 @@
 - [x] `components/calendar/MonthGrid.tsx` — 7×6 그리드 + 프로젝트 색상 칩(3개 초과 시 "+N개") + 마감일 D-Day 뱃지 + 이전/다음 달 화살표
 - [x] `components/detail/AssignDateButton.tsx` — 프로젝트 상세의 단계 카드에 날짜 배정 버튼(date picker 또는 미니 캘린더 팝오버) → `POST /api/calendar`
 - [x] `frontend/src/services/calendar.ts` — list/create/patch/delete API 호출 함수
-- [ ] `backend/src/index.ts`에 `/api/calendar` 라우트 연결
-- [ ] 프로젝트 색상은 `projects.color` 그대로 사용(§14.3)
-- [ ] 빈 상태 — 선택 날짜에 배정된 단계가 0이면 "이 날짜에 배정된 할 일이 없어요"
+- [x] `backend/src/index.ts`에 `/api/calendar` 라우트 연결
+- [x] 프로젝트 색상은 `projects.color` 그대로 사용(§14.3)
+- [x] 빈 상태 — 선택 날짜에 배정된 단계가 0이면 "이 날짜에 배정된 할 일이 없어요"
 
 ### J9. 리포트 탭 — **지희**
 
@@ -293,11 +293,11 @@
 | **PR 브랜치** | `feat/me-tab` |
 
 **산출물**:
-- [ ] `backend/src/routes/me.ts`에 `GET /api/me/stats` 추가 — 총 완료 수 · 총 time_spent · streak(연속 일수) 계산
-- [ ] `pages/MePage.tsx` 확장 — 통계 카드 + 히스토리 아코디언
-- [ ] `components/me/StatsCard.tsx` (3개 큰 숫자 카드)
-- [ ] `components/me/CompletedProjectList.tsx` — 진행률 100% 프로젝트만 아코디언으로 표시
-- [ ] streak 계산 로직 — `steps.updated_at`(또는 별도 컬럼)을 일자별 그룹핑
+- [x] `backend/src/routes/me.ts`에 `GET /api/me/stats` 추가 — 총 완료 수 · 총 time_spent · streak(연속 일수) 계산
+- [x] `pages/MePage.tsx` 확장 — 통계 카드 + 히스토리 아코디언
+- [x] `components/me/StatsCard.tsx` (3개 큰 숫자 카드)
+- [x] `components/me/CompletedProjectList.tsx` — 진행률 100% 프로젝트만 아코디언으로 표시
+- [x] streak 계산 로직 — `steps.updated_at`(또는 별도 컬럼)을 일자별 그룹핑
 
 ### J11. 모바일 폭 폴리싱 + 빈 상태 + 에러 처리 — **지희**
 

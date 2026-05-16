@@ -75,7 +75,8 @@ export default function TimerPage() {
   // ── 시간 설정 화면 ──
   if (mode === "timepick") {
     return (
-      <main className="min-h-screen bg-bg text-tx flex flex-col items-center px-6 py-10 max-w-lg mx-auto w-full">
+      <main className="min-h-screen text-tx flex flex-col items-center px-[18px] py-10">
+        <div className="w-full max-w-[480px] flex flex-col flex-1 items-center">
         {/* 뒤로가기 */}
         <button
           type="button"
@@ -140,17 +141,18 @@ export default function TimerPage() {
           <button
             type="button"
             onClick={startTimer}
-            className="w-full rounded-xl bg-ac text-white py-4 text-sm font-black cursor-pointer"
+            className="w-full rounded-xl bg-ac text-white py-4 text-sm font-black cursor-pointer shadow-[0_4px_14px_rgba(255,107,61,0.35)] hover:opacity-90 transition-opacity"
           >
             집중 시작하기
           </button>
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-full text-center text-sm font-bold text-mu py-2 cursor-pointer"
+            className="w-full rounded-xl border border-bd bg-sf text-tx2 py-3.5 text-sm font-bold cursor-pointer hover:bg-fa transition-colors"
           >
             돌아가기
           </button>
+        </div>
         </div>
       </main>
     );
@@ -158,34 +160,36 @@ export default function TimerPage() {
 
   // ── 카운트다운 화면 ──
   return (
-    <main className="min-h-screen bg-bg text-tx flex flex-col items-center justify-between px-6 py-10 max-w-lg mx-auto w-full">
-      <button
-        type="button"
-        onClick={() => { setMode("timepick"); setIsOn(false); if (intervalRef.current) clearInterval(intervalRef.current); }}
-        className="self-start bg-sf border border-bd rounded-xl p-2.5 text-tx shadow-sm cursor-pointer"
-        aria-label="설정으로"
-      >
-        <ChevronLeft size={16} />
-      </button>
-
-      <CountdownRing totalSec={totalSec} elapsedSec={elapsedSec} isPaused={isPaused} />
-
-      {/* 제어 버튼 */}
-      <div className="w-full flex flex-col gap-3">
+    <main className="min-h-screen text-tx flex flex-col items-center justify-between px-[18px] py-10">
+      <div className="w-full max-w-[480px] flex flex-col flex-1 justify-between items-center">
         <button
           type="button"
-          onClick={() => setIsPaused((prev) => !prev)}
-          className="w-full rounded-xl bg-ac-s border border-ac text-ac-d py-4 text-sm font-black cursor-pointer"
+          onClick={() => { setMode("timepick"); setIsOn(false); if (intervalRef.current) clearInterval(intervalRef.current); }}
+          className="self-start bg-sf border border-bd rounded-xl p-2.5 text-tx shadow-sm cursor-pointer"
+          aria-label="설정으로"
         >
-          {isPaused ? "▶ 계속하기" : "⏸ 일시정지"}
+          <ChevronLeft size={16} />
         </button>
-        <button
-          type="button"
-          onClick={() => void handleStop()}
-          className="w-full rounded-xl bg-sf border border-bd text-mu py-3.5 text-sm font-black cursor-pointer"
-        >
-          ■ 종료하기
-        </button>
+
+        <CountdownRing totalSec={totalSec} elapsedSec={elapsedSec} isPaused={isPaused} />
+
+        {/* 제어 버튼 */}
+        <div className="w-full flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => setIsPaused((prev) => !prev)}
+            className="w-full rounded-xl bg-ac-s border border-ac text-ac-d py-4 text-sm font-black cursor-pointer"
+          >
+            {isPaused ? "▶ 계속하기" : "⏸ 일시정지"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleStop()}
+            className="w-full rounded-xl bg-sf border border-bd text-mu py-3.5 text-sm font-black cursor-pointer"
+          >
+            ■ 종료하기
+          </button>
+        </div>
       </div>
     </main>
   );

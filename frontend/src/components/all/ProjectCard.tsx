@@ -23,7 +23,10 @@ export default function ProjectCard({ project, onDelete: _ }: Props) {
         <span
           aria-hidden
           className="mt-1.5 w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: project.color ?? "var(--color-ac)" }}
+          style={{
+            backgroundColor: project.color ?? "var(--color-ac)",
+            boxShadow: `0 0 0 3px ${project.color ?? "var(--color-ac)"}25`,
+          }}
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">

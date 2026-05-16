@@ -57,6 +57,9 @@ export default function ProjectDetailPage() {
   // 편집 모드 상태 — isEditing: true 시 StepEditor 표시
   const [isEditing, setIsEditing] = useState(false);
   const [editableSteps, setEditableSteps] = useState<EditableStep[]>([]);
+  const [editableTitle, setEditableTitle] = useState("");
+  const [editableStartDate, setEditableStartDate] = useState<string>("");
+  const [editableDue, setEditableDue] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
 
   // 버전 기록 상태
@@ -203,6 +206,9 @@ export default function ProjectDetailPage() {
           })),
         })),
     );
+    setEditableTitle(project.title);
+    setEditableStartDate(project.startDate ?? "");
+    setEditableDue(project.due ?? "");
     setIsEditing(true);
   }
 
@@ -210,12 +216,19 @@ export default function ProjectDetailPage() {
   function handleEditCancel() {
     setIsEditing(false);
     setEditableSteps([]);
+    setEditableTitle("");
+    setEditableStartDate("");
+    setEditableDue("");
   }
 
   // 편집 저장 — 빈 제목(자식 포함) 검사 후 PATCH 호출, 성공 시 최신 데이터 재조회.
   // 트리(1차 + children) 그대로 백엔드에 전달 — 새 round decomposition에 부모·자식 모두 새로 insert.
   async function handleEditSave() {
     if (!project || !id) return;
+    if (!editableTitle.trim()) {
+      alert("프로젝트 제목을 입력해 주세요.");
+      return;
+    }
     const emptyTitle = editableSteps.some(
       (s) => !s.title.trim() || (s.children ?? []).some((c) => !c.title.trim()),
     );
@@ -232,11 +245,18 @@ export default function ProjectDetailPage() {
           ? { ...base, children: kids.map((c) => ({ id: c.id, title: c.title.trim() })) }
           : base;
       });
-      await editSteps(id, payload);
+      await editSteps(id, payload, {
+        title: editableTitle.trim() !== project.title ? editableTitle.trim() : undefined,
+        startDate: editableStartDate || null,
+        due: editableDue || null,
+      });
       const updated = await getProject(id);
       setProject(updated);
       setIsEditing(false);
       setEditableSteps([]);
+      setEditableTitle("");
+      setEditableStartDate("");
+      setEditableDue("");
     } catch {
       alert("저장하지 못했어요. 다시 시도해 주세요.");
     } finally {
@@ -336,19 +356,31 @@ export default function ProjectDetailPage() {
   const ddayText = getDdayText(project.due);
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-[720px] mx-auto w-full space-y-4">
+    <div className="px-[18px] py-6 space-y-4">
       {/* ── 헤더 — 뒤로가기 + 프로젝트명 + D-Day ── */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate("/all")}
-          className="bg-sf border border-bd rounded-xl p-2.5 text-tx shadow-sm shrink-0"
+          className="bg-sf border border-bd rounded-xl p-2.5 text-tx shadow-sm shrink-0 hover:bg-fa transition-colors"
           aria-label="목록으로"
         >
           <ChevronLeft size={16} />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-black text-tx leading-snug break-keep">{project.title}</h1>
+          {isEditing ? (
+            <input
+              type="text"
+              value={editableTitle}
+              onChange={(e) => setEditableTitle(e.target.value)}
+              maxLength={30}
+              disabled={isSaving}
+              placeholder="프로젝트 제목"
+              className="w-full text-lg font-black text-tx bg-transparent outline-none placeholder:text-mu2 disabled:opacity-50"
+            />
+          ) : (
+            <h1 className="text-lg font-black text-tx leading-snug break-keep">{project.title}</h1>
+          )}
           {(project.due || ddayText) && (
             <p className="text-xs text-mu mt-0.5">
               {project.due} {ddayText && <span className="font-bold">{ddayText}</span>}
@@ -357,21 +389,49 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* ── 진행률 카드 ── */}
-      <ProgressCard
+      {/* ── 진행률 카드 — 편집 모드에서는 숨김 ── */}
+      {!isEditing && <ProgressCard
         progress={project.progress}
         doneCount={project.doneCount}
         totalCount={project.totalCount}
         color={project.color}
-      />
+      />}
 
       {/* ── 단계 목록 / 편집기 ── */}
       <div>
-        <p className="text-xs font-bold text-mu mb-3 px-1">
-          {isEditing ? "단계 편집" : "단계별 진행 상황"}
-        </p>
+        {!isEditing && (
+          <p className="text-xs font-bold text-mu mb-3 px-1">단계별 진행 상황</p>
+        )}
         {isEditing ? (
-          <StepEditor steps={editableSteps} onChange={setEditableSteps} busy={isSaving} />
+          <>
+            {/* 날짜 편집 */}
+            <p className="text-xs font-black text-tx2 px-1 mb-2">진행 기간</p>
+            <div className="bg-sf border border-bd2 rounded-xl px-[14px] py-3 flex gap-[10px] items-center mb-5">
+              <div className="flex-1 flex items-center gap-[6px]">
+                <span className="text-xs text-mu font-semibold whitespace-nowrap">시작</span>
+                <input
+                  type="date"
+                  value={editableStartDate}
+                  onChange={(e) => setEditableStartDate(e.target.value)}
+                  disabled={isSaving}
+                  className="w-full bg-transparent border-none outline-none h-[34px] text-[13px] text-tx2 disabled:opacity-50"
+                />
+              </div>
+              <span className="text-mu2 text-xs">~</span>
+              <div className="flex-1 flex items-center gap-[6px]">
+                <span className="text-xs text-mu font-semibold whitespace-nowrap">마감</span>
+                <input
+                  type="date"
+                  value={editableDue}
+                  onChange={(e) => setEditableDue(e.target.value)}
+                  disabled={isSaving}
+                  className="w-full bg-transparent border-none outline-none h-[34px] text-[13px] text-tx2 disabled:opacity-50"
+                />
+              </div>
+            </div>
+            <p className="text-xs font-black text-tx2 px-1 mb-2">단계</p>
+            <StepEditor steps={editableSteps} onChange={setEditableSteps} busy={isSaving} />
+          </>
         ) : (
           <div className="space-y-2.5">
             {topLevelSteps.map((step, i) => (
@@ -408,7 +468,7 @@ export default function ProjectDetailPage() {
             type="button"
             onClick={() => void handleEditSave()}
             disabled={isSaving}
-            className="flex-1 rounded-xl bg-ac text-white px-4 py-3 text-sm font-black text-center disabled:opacity-60"
+            className="flex-1 rounded-xl bg-ac text-white px-4 py-3 text-sm font-black text-center hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {isSaving ? "저장 중…" : "저장하기"}
           </button>
