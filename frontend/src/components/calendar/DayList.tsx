@@ -59,6 +59,7 @@ export default function DayList({ assignments, selectionMode, selectedIds, onTog
             const color = a.project.color ?? "var(--color-ac)";
             const isSelected = selectedIds.has(a.id);
             const dd = a.project.due ? dDayLabel(a.project.due) : null;
+            const showProjectTitle = a.project.title !== a.step.title;
 
             return (
               <li
@@ -105,12 +106,17 @@ export default function DayList({ assignments, selectionMode, selectedIds, onTog
                     {a.step.title}
                   </p>
                   {/* 프로젝트명 + D-Day */}
-                  <p className="text-[11.5px] text-mu mt-0.5 truncate">
-                    {a.project.title}
-                    {dd && (
-                      <span className="font-black text-tx"> · {dd}</span>
-                    )}
-                  </p>
+                  {(showProjectTitle || dd) && (
+                    <p className="text-[11.5px] text-mu mt-0.5 truncate">
+                      {showProjectTitle && a.project.title}
+                      {dd && (
+                        <span className="font-medium text-tx">
+                          {showProjectTitle ? " · " : ""}
+                          {dd}
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 {/* 일반 모드: 시작 + 체크 + ▲▼ */}

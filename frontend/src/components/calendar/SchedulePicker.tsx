@@ -14,15 +14,14 @@ type Props = {
   onAssigned: () => void;
 };
 
-function dDayLabel(due: string): { text: string; color: string } | null {
+function dDayLabel(due: string): string | null {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const dueDate = new Date(due + "T00:00:00");
   const diff = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
-  if (diff < 0) return { text: `D+${Math.abs(diff)}`, color: "#E74C3C" };
-  if (diff === 0) return { text: "D-Day", color: "#E74C3C" };
-  if (diff <= 3) return { text: `D-${diff}`, color: "#E67E22" };
-  return { text: `D-${diff}`, color: "#22A560" };
+  if (diff < 0) return `D+${Math.abs(diff)}`;
+  if (diff === 0) return "D-Day";
+  return `D-${diff}`;
 }
 
 export default function SchedulePicker({ date, dateLabel, existingAssignments, onClose, onAssigned }: Props) {
@@ -161,16 +160,11 @@ export default function SchedulePicker({ date, dateLabel, existingAssignments, o
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}22` }}
                         />
-                        <span className="flex-1 min-w-0 text-[12.5px] font-black text-tx truncate">
+                        <span className="min-w-0 text-[12.5px] font-black text-tx truncate">
                           {p.title}
                         </span>
                         {dd && (
-                          <span
-                            className="text-[11px] font-black shrink-0"
-                            style={{ color: dd.color }}
-                          >
-                            {dd.text}
-                          </span>
+                          <span className="text-[11px] font-medium text-tx2 shrink-0">{dd}</span>
                         )}
                       </div>
                     )}
@@ -211,11 +205,11 @@ export default function SchedulePicker({ date, dateLabel, existingAssignments, o
                             {p.isSingle && !indent && (
                               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color, boxShadow: `0 0 0 3px ${color}22` }} />
                             )}
-                            <span className="flex-1 min-w-0 text-[12.5px] font-semibold text-tx truncate">
+                            <span className="min-w-0 text-[12.5px] font-semibold text-tx truncate">
                               {step.title}
                             </span>
                             {p.isSingle && !indent && dd && (
-                              <span className="text-[11px] font-black shrink-0" style={{ color: dd.color }}>{dd.text}</span>
+                              <span className="text-[11px] font-medium text-tx2 shrink-0">{dd}</span>
                             )}
                           </button>
                         );
