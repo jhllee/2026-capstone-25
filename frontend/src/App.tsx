@@ -1,6 +1,7 @@
 import { BrowserRouter, Outlet, Routes, Route } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import SessionGuard from "./components/SessionGuard";
+import { ToastProvider } from "./lib/toast";
 import HomePage from "./pages/HomePage";
 import AllPage from "./pages/AllPage";
 import LoginPage from "./pages/LoginPage";
@@ -13,6 +14,7 @@ import ReportPage from "./pages/ReportPage";
 
 export default function App() {
   return (
+    <ToastProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -37,5 +39,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </ToastProvider>
   );
 }
