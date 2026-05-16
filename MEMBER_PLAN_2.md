@@ -293,11 +293,11 @@
 | **PR 브랜치** | `feat/me-tab` |
 
 **산출물**:
-- [ ] `backend/src/routes/me.ts`에 `GET /api/me/stats` 추가 — 총 완료 수 · 총 time_spent · streak(연속 일수) 계산
-- [ ] `pages/MePage.tsx` 확장 — 통계 카드 + 히스토리 아코디언
-- [ ] `components/me/StatsCard.tsx` (3개 큰 숫자 카드)
-- [ ] `components/me/CompletedProjectList.tsx` — 진행률 100% 프로젝트만 아코디언으로 표시
-- [ ] streak 계산 로직 — `steps.updated_at`(또는 별도 컬럼)을 일자별 그룹핑
+- [x] `backend/src/routes/me.ts`에 `GET /api/me/stats` 추가 — 총 완료 수 · 총 time_spent · streak(연속 일수) 계산
+- [x] `pages/MePage.tsx` 확장 — 통계 카드 + 히스토리 아코디언
+- [x] `components/me/StatsCard.tsx` (3개 큰 숫자 카드)
+- [x] `components/me/CompletedProjectList.tsx` — 진행률 100% 프로젝트만 아코디언으로 표시
+- [x] streak 계산 로직 — `steps.updated_at`(또는 별도 컬럼)을 일자별 그룹핑
 
 ### J11. 모바일 폭 폴리싱 + 빈 상태 + 에러 처리 — **지희**
 
