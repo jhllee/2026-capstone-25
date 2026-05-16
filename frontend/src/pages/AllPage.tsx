@@ -90,9 +90,20 @@ export default function AllPage() {
   const completed = projects.length - ongoing;
 
   async function handleToggle(stepId: string, done: boolean) {
-    await toggleStep(stepId, done);
-    // 완료 상태 변경 → 진행률 갱신을 위해 목록 다시 조회
-    void loadProjects();
+    // 낙관적 업데이트: isSingle 프로젝트의 progress/doneCount를 즉시 반영
+    setProjects((prev) =>
+      prev.map((p) => {
+        if (p.firstStepId !== stepId) return p;
+        const doneCount = done ? 1 : 0;
+        return { ...p, doneCount, progress: done ? 100 : 0, nextStep: done ? null : { id: stepId, title: p.title, estimatedMinutes: null } };
+      }),
+    );
+    try {
+      await toggleStep(stepId, done);
+    } catch {
+      // 실패 시 서버 상태로 복구
+      void loadProjects();
+    }
   }
 
   async function handleDelete(id: string) {

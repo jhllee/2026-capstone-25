@@ -26,6 +26,7 @@ export type ProjectSummary = {
     title: string;
     estimatedMinutes: number | null;
   }[];
+  firstStepId: string | null;
 };
 
 async function authHeaders() {

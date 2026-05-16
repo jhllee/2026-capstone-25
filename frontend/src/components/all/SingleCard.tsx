@@ -12,7 +12,9 @@ type Props = {
 export default function SingleCard({ project, onDelete, onToggle }: Props) {
   const navigate = useNavigate();
   const done = project.progress >= 100;
-  const stepId = project.nextStep?.id;
+  // nextStep은 미완료 단계만 반환하므로 완료 상태에선 null이 됨.
+  // 단일 태스크는 항상 단계가 하나뿐이므로 schedulableSteps[0] 또는 nextStep 중 있는 것을 사용.
+  const stepId = project.firstStepId;
   const color = project.color ?? "var(--color-ac)";
 
   return (
@@ -28,11 +30,10 @@ export default function SingleCard({ project, onDelete, onToggle }: Props) {
         onClick={() => stepId && onToggle(stepId, !done)}
         aria-pressed={done}
         aria-label={done ? "완료 해제" : "완료 체크"}
-        className="w-[22px] h-[22px] rounded-[7px] border-2 flex items-center justify-center shrink-0 cursor-pointer transition-all"
-        style={{
-          borderColor: done ? color : "var(--color-bd)",
-          backgroundColor: done ? color : "var(--color-sf)",
-        }}
+        className={[
+          "w-[22px] h-[22px] rounded-[7px] border-2 flex items-center justify-center shrink-0 cursor-pointer transition-all",
+          done ? "bg-tx2 border-tx2" : "bg-sf border-bd hover:border-tx2",
+        ].join(" ")}
       >
         {done && (
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -59,21 +60,15 @@ export default function SingleCard({ project, onDelete, onToggle }: Props) {
         </p>
       </div>
 
-      {/* 우측 액션 */}
-      {done ? (
-        <span className="bg-[var(--color-gn-s,#e6f9ef)] text-[var(--color-gn,#22a560)] text-[11px] font-black px-[10px] py-[6px] rounded-lg whitespace-nowrap shrink-0">
-          완료
-        </span>
-      ) : (
-        stepId && (
-          <button
-            type="button"
-            onClick={() => navigate(`/timer/${stepId}`)}
-            className="bg-ac-s text-ac-d border-none rounded-[10px] px-[14px] py-[8px] text-xs font-black cursor-pointer whitespace-nowrap shrink-0 hover:opacity-80 transition-opacity"
-          >
-            시작
-          </button>
-        )
+      {/* 우측 액션 — 미완료일 때만 시작 버튼 표시 */}
+      {!done && stepId && (
+        <button
+          type="button"
+          onClick={() => navigate(`/timer/${stepId}`)}
+          className="bg-ac-s text-ac-d border-none rounded-[10px] px-[14px] py-[8px] text-xs font-black cursor-pointer whitespace-nowrap shrink-0 hover:opacity-80 transition-opacity"
+        >
+          시작
+        </button>
       )}
 
       {/* 삭제 버튼 */}
