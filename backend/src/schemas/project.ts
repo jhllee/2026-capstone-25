@@ -64,6 +64,9 @@ const EditStepNode: z.ZodType<EditStepShape> = z.lazy(() =>
 );
 
 export const EditStepsSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  startDate: z.string().date().nullish(),
+  due: z.string().date().nullish(),
   steps: z.array(EditStepNode).min(1),
 });
 

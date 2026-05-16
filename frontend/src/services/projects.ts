@@ -68,6 +68,7 @@ export type ProjectDetail = {
   title: string;
   memo: string | null;
   color: string | null;
+  startDate: string | null;
   due: string | null;
   isSingle: boolean;
   createdAt: string;
@@ -190,11 +191,15 @@ export type EditStepInput = {
   children?: EditStepInput[];
 };
 
-export async function editSteps(projectId: string, steps: EditStepInput[]) {
+export async function editSteps(
+  projectId: string,
+  steps: EditStepInput[],
+  meta?: { title?: string; startDate?: string | null; due?: string | null },
+) {
   const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}/steps`, {
     method: "PATCH",
     headers: await authHeaders(),
-    body: JSON.stringify({ steps }),
+    body: JSON.stringify({ steps, ...meta }),
   });
 
   if (!response.ok) {
