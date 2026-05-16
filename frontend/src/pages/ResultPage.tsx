@@ -487,6 +487,7 @@ export default function ResultPage() {
         projectTitle={input.title}
         data={data}
         busySubDecomposeParentId={busySubParentId}
+        isTemplateSourced={!!input.templateHint?.trim()}
         onSubDecompose={handleSubDecompose}
         onCancelSubSteps={handleCancelSubSteps}
       />
