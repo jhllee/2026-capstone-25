@@ -21,6 +21,11 @@ export type ProjectSummary = {
     title: string;
     estimatedMinutes: number | null;
   } | null;
+  schedulableSteps: {
+    id: string;
+    title: string;
+    estimatedMinutes: number | null;
+  }[];
 };
 
 async function authHeaders() {
