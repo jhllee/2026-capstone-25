@@ -34,7 +34,7 @@ export default function ResultBlock({
       <div className="inline-flex items-center gap-1 text-[11px] font-bold text-ac-d bg-ac-s rounded-full px-[10px] py-1 mb-[10px]">
         ✦ AI가 {topLevel.length}개 단계로 정리했어요
       </div>
-      <div className="text-[21px] font-extrabold text-tx leading-[1.3] mb-[14px]">
+      <div className="text-[21px] font-extrabold text-tx leading-[1.3] mb-[14px] break-keep">
         {projectTitle}
       </div>
 
