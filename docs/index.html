@@ -224,7 +224,7 @@
 
     /* ABOUT */
     .about { background: var(--sf); border-top: 1px solid var(--bd); border-bottom: 1px solid var(--bd); }
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: stretch; }
     .about-text p { color: var(--tx2); margin-bottom: 1rem; font-size: 0.97rem; }
     .about-hook {
       font-size: 1.05rem; font-weight: 700; color: var(--tx);
@@ -236,7 +236,7 @@
       text-decoration-thickness: 2px;
       text-underline-offset: 4px;
     }
-    .about-visual { background: var(--ac-s); border-radius: var(--r); padding: 2.4rem; display: flex; flex-direction: column; gap: 1.2rem; border: 1px solid var(--ac-s2); }
+    .about-visual { background: var(--ac-s); border-radius: var(--r); padding: 1.6rem 2rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; border: 1px solid var(--ac-s2); }
     .flow-step { display: flex; align-items: center; gap: 1rem; }
     .flow-num { width: 34px; height: 34px; border-radius: 50%; background: var(--ac-d); color: #fff; font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .flow-text { font-size: 0.9rem; font-weight: 600; color: var(--tx); }
@@ -573,7 +573,9 @@
         <div class="flow-arrow">↓</div>
         <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">집중 타이머로 실행</div></div>
         <div class="flow-arrow">↓</div>
-        <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">진행 관리 · 일정 배치 · 주간 리포트</div></div>
+        <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">진행 관리 · 일정 배치</div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-num">5</div><div class="flow-text">주간 리포트</div></div>
       </div>
     </div>
   </div>
