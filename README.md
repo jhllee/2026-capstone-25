@@ -93,8 +93,8 @@
     </td>
   </tr>
   <tr align="center">
-    <td>Full Stack<br/>AI 분해 엔진 설계·구현<br/>파일 파싱, 입력/결과 UI</td>
-    <td>Full Stack<br/>타이머, 캘린더, 리포트<br/>DB 설계, RLS 정책</td>
+    <td>Full Stack<br/>AI 분해 엔진 설계·구현<br/>파일 전처리, 입력/결과 UI</td>
+    <td>Full Stack<br/>타이머, 캘린더, 리포트<br/>DB 설계</td>
   </tr>
 </table>
 
